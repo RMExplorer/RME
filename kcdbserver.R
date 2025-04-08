@@ -1,5 +1,6 @@
 library(httr)
 
+#get one entry to find out the total number of elements in order to request that number
 requestBody <-'{
   "page": 0,
   "pageSize": 1,
@@ -12,23 +13,24 @@ requestBody <-'{
 data <- NULL
 
 tryCatch({
+  #get the total number of elements and make another request with it
   kcdb <- POST("https://www.bipm.org/api/kcdb/cmc/searchData/chemistryAndBiology", 
                body=requestBody, 
                httr::add_headers(`accept` = 'application/json'), 
                httr::content_type('application/json'))
   
-  #get the total number of elements and make another request with it
   totalElements <- content(kcdb)$totalElements
   
+  #request all the elements
   requestBody <-paste('{
-  "page": 0,
-  "pageSize":', totalElements, ',
-  "showTable": false,
-  "metrologyAreaLabel": "QM",
-  "countries": [
-    "CA"
-  ]
-}', sep="")
+    "page": 0,
+    "pageSize":', totalElements, ',
+    "showTable": false,
+    "metrologyAreaLabel": "QM",
+    "countries": [
+      "CA"
+    ]
+  }', sep="")
   
   kcdb <- POST("https://www.bipm.org/api/kcdb/cmc/searchData/chemistryAndBiology", 
                body=requestBody, 
@@ -54,7 +56,6 @@ tryCatch({
   crmUncert <- c()
   crmUncertUnit <- c()
   uncertConvention <- c()
-  
   
   #going into each item and combining the value into a column
   for (i in 1:length(kcdbData)) {
@@ -98,6 +99,7 @@ warning = function(cond) {
   NULL
 })
 
+#attaches the hover text the the header for uncertainty convention
 headerCallback <- c(
   "function(thead, data, start, end, display){",
   "  var uncertaintyTooltips = 'Check uncertainty convention column. If convention one is used, it means that these uncertainty values are achievable for any quantity value in the measurement range. If convention two is used, there is a linear relation between the quantity values and the achievable uncertainty';",
