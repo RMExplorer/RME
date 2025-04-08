@@ -341,7 +341,7 @@ observeEvent(input$customTable_rows_selected, {
     #finds spectral data and adds the link to the list
     for (i in 1:length(hasData)){
       if (!is.na(hasData[[i]])) {
-        links <- getCsvFile(hasData[[i]], "full scan MS")
+        links <- getCsvFile(hasData[[i]], "full scan MS|fullscan|full scan")
         if (!is.null(links)) {
           for (link in links){
             #read the file from the link to get the data type and the substance name
@@ -360,7 +360,7 @@ observeEvent(input$customTable_rows_selected, {
             }
           }
         }
-        links <- getCsvFile(hasData[[i]], "nmr")
+        links <- getCsvFile(hasData[[i]], "nmr|1H-NMR")
         if (!is.null(links)) {
           for (link in links){
             #read the file from the link to get the data type and the substance name
@@ -380,7 +380,7 @@ observeEvent(input$customTable_rows_selected, {
           }
         }
         
-        links <- getCsvFile(hasData[[i]], "MS/MS")
+        links <- getCsvFile(hasData[[i]], "MS/MS|MSMS")
         if (!is.null(links)) {
           for (link in links){
             #read the file from the link to get the data type and the substance name
