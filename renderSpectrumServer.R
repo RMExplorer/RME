@@ -48,8 +48,9 @@ output$spectrum <- renderPlotly({
   
   #if the dropdown option has the text mass spectrum in it
   if (grepl("mass spectrum", input$spectrumSelection, ignore.case = TRUE) | 
+      grepl("full scan", input$spectrumSelection, ignore.case = TRUE) |
       grepl("msms", input$spectrumSelection, ignore.case = TRUE) | 
-      grepl("ms", input$spectrumSelection, ignore.case = TRUE)) {
+      grepl("ms/ms", input$spectrumSelection, ignore.case = TRUE)) {
     req(v$spectralData$SpectralLink[match(input$spectrumSelection, v$spectralData$Name)])
     link <- v$spectralData$SpectralLink[match(input$spectrumSelection, v$spectralData$Name)]
     tmpfile <- tempfile(fileext = ".csv")
