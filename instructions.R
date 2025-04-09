@@ -1,28 +1,56 @@
 output$instructions <- renderUI({
   HTML(paste(
-    "<h3>Compounds Page </h3>",
-    "<p>Use the drop downs to search for an Inchikey, Compound, or Keyword. 
-    You can then select a compound from the table shown in order to display its properties on the Properties page. 
-    You can also clear all your selection by clicking the 'Unselect All Rows' button located at the bottom left of the page. 
+    "<h3>General Search Page </h3>",
+    "<p>Use the drop downs to search for an Inchikey, Compound, IUPAC or any Keyword. There is a check box next to the search dropdown
+    that lets you pick whether you want to add the selected substance to the table or if you want the selected substance to replace 
+    everything that is in the table.
+    You can then select a compound from the table shown in order to display its properties on the Properties tab. 
+    You can also select a substance from the table and see its spectral data (if it has any) on the Spectral Data tab.
+    You can clear all your selection by clicking the 'Unselect All Rows' button located at the top right of the page. 
     By loggining in, you will be given the option to save the table you have created for later use. 
     You are allowed to create multiple tables.</p>",
     "<br><hr><br>",
     
-    "<h3>Properties Page </h3>",
-    "<p>When you have selected a singular compound from the table in the Compounds Page, 
-    this page will show detailed information about the compound. 
-    There will be an option to select a certificate in the 'Additional Information' section. 
-    If the selected certificate has has additional (machine readable) information, it will be displayed.</p>",
+    "<h3>CRM Search Page </h3>",
+    "<p>The `Search for a CRM` dropdown displays all the CRMs in the NRC Repository. Select a CRM from that dropdown to add it to the table below.
+    You can also use the `Select an Affiliate` in order to see all the CRMs from a certain group.
+    If you click on the name of a CRM on the table, you can see a popup which displays some information about the CRM.
+    If you click the `Add All CRMs to the Table` button, then all the CRMs from the NRC Repository will be added to the table.
+    If you want to add the substances referenced in a specific CRM to the Substance table in the General Search Page, click on the CRM(s) and 
+    then press the `Add Choosen CRM(s) to the Substance Table` button.</p>",
     "<br><hr><br>",
+    
+    "<h3>Properties Page </h3>",
+    "<p>When you have selected a singular substance from the table in the Subtance Table in the General Search Page, 
+    this page will show detailed information about the substance. 
+    There will be a `Similar Compounds` dropdown on this page which will display all the substances that are similar to the choosen one which 
+    exist in the NRC Repository. If you want, you can select a compound and then click the `Add Compound` button next to it in order to add 
+    it to the Subtance table.</p>",
+    "<br><hr><br>",
+    
     "<h3>Physico-chemical Properties Page </h3>",
-    "<p>Contains 4 dropdowns (pKow, Molecular Weight, Show Label, Show Selected or All Compounds) 
-    which allow further filtering of the compounds selected from the Compounds Page.
+    "<p>Contains 4 dropdowns (Filter polarity (pKow), Filter Molecular Weight, Show Compound Name, Show All Analytes in the Substances Table or Only Selected Analytes) 
+    which allow further filtering of the substances in the Substance Table.
     </p>",
     "<p>You will be able to see a list of compounds at the bottom. This list contains all the compounds that match the filters.
-    You can also click the 'Download the compound list' in order to download information soley about the filtered compounds.</p>",
+    You can also click the 'Download the Compound List' in order to download information solely about the filtered compounds.</p>",
     "<br><hr><br>",
+    
     "<h3>Spectral Data Page </h3>",
-    "<p>Once you have selected a singular compound from the Compounds Page, you can view all the spectral graphs it has by selecting it from the dropdown.
-    There is also a download button located to the top right so you can download the spectral data you have selected.</p>"
+    "<p>Once you have selected a singular substance from the Substance Table in the General Search Page, 
+    you can view all the spectral graphs it has by selecting them from the dropdown.
+    There is also a download button located to the top right so you can download the spectral data you have selected.</p>",
+    "<br><hr><br>",
+    
+    
+    "<h3>CMC Information Page </h3>",
+    "<p>Displays information from the KCDB API. Each column uses either Uncertainy Convention One or Two, as specified by the last column.
+    Convention one is used when the expanded uncertainty range spans from the smallest numerical 
+    value of the uncertainty to the largest numerical value of the uncertainty found within the quantity range. 
+    Convention 2 two is used when the expanded uncertainty range is expressed as the uncertainty of the smallest 
+    value of the quantity to the uncertainty of the largest value of the quantity; I.e., there is a link between 
+    the `from` entries and a link between the `to` entries for the dissemination range and the expanded uncertainty range.
+    You may hover over the Uncertainty Uncertainty Convention column header in order to view this description on the page.</p>"
+    
   ))
 })
