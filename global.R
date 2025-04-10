@@ -5,7 +5,6 @@ library(stringr)
 #types of spectrums
 types <- c("NMR", "FSMS", "MSMS")
 
-# usersChanged <- 1                     #incremented when the credentials table is changed
 connectionLink <- "mongodb+srv://rmexplorerdata:djGC7HZnz2et455e@usercompounds.ae2s6.mongodb.net/?retryWrites=true&w=majority&appName=UserCompounds"
 
 

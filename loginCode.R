@@ -109,13 +109,7 @@ observeEvent(input$addUser, {
   } else {
     output$usernameError <- renderUI({})
     output$invalidEntry <- renderUI({})
-    # sheet_append(loginInfo_id, data.frame(trimws(input$username),
-    #                                       trimws(input$password), 
-    #                                       "standard", 
-    #                                       trimws(input$name), 
-    #                                       trimws(input$email), 
-    #                                       trimws(input$organization)), sheet="credentials")
-    
+
     insertUser(trimws(input$username),
                trimws(input$password),
                "standard",

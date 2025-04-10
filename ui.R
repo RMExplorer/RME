@@ -63,9 +63,9 @@ ui <- navbarPage(
                         theme = bs_theme(version = 5, bootswatch = "sandstone"),
                         br(),
                         h3("Substance Table"),
-                        uiOutput("RMESearch"),                                             #in compoundsUI.R
+                        uiOutput("RMESearch"),                                  #in compoundsUI.R (loaded in server.R)
                         fixedPanel(
-                          actionButton("unselect", "Unselect All Rows",                    #in server.R
+                          actionButton("unselect", "Unselect All Rows",         #in compoundsServer.R (loaded in server.R)
                                        class="btn-danger", 
                                        style="justify-content:center;"),
                           style="border:none;border-radius:25px;display:flex;",
@@ -78,9 +78,9 @@ ui <- navbarPage(
              tabPanel("CRM Search",
                       fluidPage(
                         theme = bs_theme(version = 5, bootswatch = "sandstone"),
-                        uiOutput("crmSearch"),                                  #in crmSearchUI.R (loaded in server.R)
+                        uiOutput("crmSearch"),                                  #in crmSearchUI.R (loaded in server.R) (loaded in server.R)
                         fixedPanel(
-                          actionButton("unselectCRMs", "Unselect All Rows",                    #in server.R
+                          actionButton("unselectCRMs", "Unselect All Rows",     #in crmSearchServer.R (loaded in server.R)
                                        class="btn-danger", 
                                        style="justify-content:center;"),
                           style="border:none;border-radius:25px;display:flex;",
@@ -124,7 +124,7 @@ ui <- navbarPage(
              tabPanel("CMC Information",
                       fluidPage(
                         theme = bs_theme(version = 5, bootswatch = "sandstone"),
-                        DTOutput("kcdbTable")                                       #in kcdbserver.R (loaded in server.R)
+                        DTOutput("kcdbTable")                                   #in kcdbserver.R (loaded in server.R)
                       )
              ),
              tabPanel("Instructions",
