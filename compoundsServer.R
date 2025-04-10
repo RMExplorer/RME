@@ -136,9 +136,10 @@ getTableData <- function(analytes){
           )
         )
       }
+      #contains the info from PubChem
+      info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)
       
       #will search the repository with the name/inchikey the analyte was searched with
-      info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)
       link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                     gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
       ids <- ""
