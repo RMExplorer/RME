@@ -137,13 +137,13 @@ ui <- navbarPage(
   nav_item(
     tags$ul(
       tags$span(
-        conditionalPanel('!output.userLoggedIn', actionButton("showLogin", "Login", class="btn-success")),                                          
+        conditionalPanel('!output.userLoggedIn', input_task_button("showLogin", "Login", class="btn-success")),                                          
         shinyauthr::logoutUI(id = "logout")
       ), 
       style="list-style-type:none;display:flex;justify-content:space-between;padding:0;"
     )
   ),
   nav_item(
-    div(actionButton("register", "Register", class="btn-primary"))
+    div(input_task_button("register", "Register", class="btn-primary"))
   )
 )
