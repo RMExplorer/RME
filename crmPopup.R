@@ -3,8 +3,12 @@
 output$js_code <- renderUI({
   tags$script(HTML("$(document).on('click', '.view-info', function(e){
                  e.preventDefault();
-                 var name = $(this).data('name');
-                 Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+                 var thisClickTime = new Date().getTime();
+                 if (thisClickTime - lastClickTime > 2000) {
+                    var name = $(this).data('name');
+                    Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+                    lastClickTime = thisClickTime;
+                  }
                 });"
   ))
 })
@@ -13,8 +17,12 @@ output$js_code <- renderUI({
 output$js_code2 <- renderUI({
   tags$script(HTML("$(document).on('click', '.view-info2', function(e){
                  e.preventDefault();
-                 var name = $(this).data('name');
-                 Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+                 var thisClickTime = new Date().getTime();
+                 if (thisClickTime - lastClickTime > 2000) {
+                    var name = $(this).data('name');
+                    Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+                    lastClickTime = thisClickTime;
+                  }
                 });"
   ))
 })

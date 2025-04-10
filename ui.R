@@ -26,7 +26,8 @@ ui <- navbarPage(
           body {
             padding-top: 70px;
           }
-          "))
+          ")),
+  tags$script(HTML("var lastClickTime = 0;"))
   ),
   id="tabs",
   position = "fixed-top",
