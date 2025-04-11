@@ -41,7 +41,6 @@ tryCatch({
   
   #initialize the columns
   kcdbId <- c()
-  pubDate <- c()
   approvalDate <- c()
   cmc <- c()
   cmcUnits <- c()
@@ -60,7 +59,6 @@ tryCatch({
   #going into each item and combining the value into a column
   for (i in 1:length(kcdbData)) {
     kcdbId <- c(kcdbId, kcdbData[[i]]$kcdbCode)
-    pubDate <- c(pubDate, kcdbData[[i]]$publicationDate)
     approvalDate <- c(approvalDate, kcdbData[[i]]$approvalDate)
     cmc <- c(cmc, paste(kcdbData[[i]]$cmc$lowerLimit, "to", kcdbData[[i]]$cmc$upperLimit))
     cmcUnits <- c(cmcUnits, kcdbData[[i]]$cmc$unit)
@@ -81,12 +79,12 @@ tryCatch({
   }
   
   #make a data frame with all the columns
-  data <- data.frame(name, kcdbId, pubDate, approvalDate, 
+  data <- data.frame(name, kcdbId, approvalDate, 
                      cmc, cmcUnits, cmcUncert,  cmcUncertUnit, 
                      category, subcategory, analyteMatrix, 
                      crm, crmUnits, crmUncert, crmUncertUnit, uncertConvention)
   
-  colnames(data) <- c("Name", "KCDB ID", "Publication Date", "Approval Date", "CMC", "CMC Units", 
+  colnames(data) <- c("Name", "KCDB ID", "Approval Date", "CMC", "CMC Units", 
                       "CMC Uncertainty", "CMC Uncertainty Units", "Category", "Subcategory",
                       "Matrix", "CRM", "CRM Units", "CRM Uncertainty", "CRM Uncertainty Units", "Uncertainty Convention")
 },
