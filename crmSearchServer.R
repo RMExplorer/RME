@@ -118,7 +118,8 @@ observeEvent(input$removeAllCRM, {
 
 output$crmTable <- renderDT({
   req(length(crmTableData()) > 0)
-  datatable(crmTableData()[, c("Name", "Affiliates", "Format")], escape = FALSE)
+  datatable(crmTableData()[, c("Name", "Affiliates", "Format")], escape = FALSE,
+            filter= list(position='top', clear = FALSE))
 })
 
 observeEvent(input$addAllCRMs, {
