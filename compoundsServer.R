@@ -173,6 +173,13 @@ getTableData <- function(analytes){
       titles = sort(df$title)
       names(crms) = crms
       
+      #initializing the mass fraction and concentration of the compound 
+      minMassFraction <- 999999
+      maxMassFraction <- 0
+      
+      minMassConc <- 999999
+      maxMassConc <- 0
+      
       crmHTML <- c()
       for (crm in crms) {
         if(crm != "No results"){
@@ -183,6 +190,62 @@ getTableData <- function(analytes){
             "<p>", crm, "</p>",sep="")))
         }
         
+        #find the min/max mass concentration and fraction
+        #search repository for id
+        recordRow <- recordDF[recordDF$crm %in% crm,]
+        id <- recordRow$id
+        
+        req(id)
+        
+        #use id to get a link to the digital repository entry
+        link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
+        
+        #use doi content to get information (title, abstract, table, doi)
+        #overrides the ssl verifypeer so the webpage can be reached
+        h <- curl::new_handle()
+        curl::handle_setopt(h, ssl_verifypeer = 0)
+        ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
+        rm(h)
+        #sets analyte table data to null, unless crm contains analyte table
+        analyteTable <- NULL
+        if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
+          analyteTable <- data.frame(ddf[[3]])
+        }
+        
+        #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
+        if (!is.null(analyteTable) && length(info[["MolecularWeight"]]) != 0) {
+          massFrac <- as.numeric(analyteTable$Value[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
+
+          if (min(massFrac) < minMassFraction) {
+            minMassFraction <- min(massFrac)
+          }
+          
+          if (max(massFrac) > maxMassFraction) {
+            maxMassFraction <- max(massFrac)
+          }
+          
+          massConc <- as.numeric(analyteTable$Value[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
+          units <- analyteTable$Unit[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
+          
+          #converting µmol/L tp µg/mL
+          if (length(units) == 1 && units == "µmol/L") {
+            massConc = (massConc * as.numeric(info[["MolecularWeight"]])) / 1000
+          } else if (length(units) > 1 ) {
+            for (l in 1:length(units)){
+              if (units[[l]] == "µmol/L") {
+                massConc[[l]] = (massConc[[l]] * as.numeric(info[["MolecularWeight"]])) / 1000
+              }
+            }
+          }
+          
+          if (min(massConc) < minMassConc) {
+            minMassConc <- min(massConc)
+          }
+          
+          if (max(massConc) > maxMassConc) {
+            maxMassConc <- max(massConc)
+          }
+        }
       }
       
       #create the datarow with all the pubchem info
@@ -196,7 +259,8 @@ getTableData <- function(analytes){
         ifelse(length(info[["XLogP"]]) != 0, info[["XLogP"]] * -1, NA), 
         ifelse(length(info[["ExactMass"]]) != 0, info[["ExactMass"]], NA), 
         ifelse(length(info[["TPSA"]]) != 0, info[["TPSA"]], NA),
-        ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA)
+        ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA),
+        minMassFraction, maxMassFraction, minMassConc, maxMassConc
       )
 
       #add the crm column to the table row
@@ -208,7 +272,9 @@ getTableData <- function(analytes){
     colnames(data) <- c("Name", "CID", "Molecular Formula", 
                         "Molecular Weight", "Isomeric Smiles", 
                         "InchiKey", "pKow", "Exact Mass", "TPSA", 
-                        "Reference Materials")
+                        "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+                        "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                        "Maximum Mass Concentration (µg/mL)")
     
   }
   row.names(data) <- NULL
@@ -518,14 +584,23 @@ output$customTable <- renderDT({
                                 "Molecular Formula", 
                                 "Molecular Weight", 
                                 "pKow", 
-                                "Reference Materials")]
+                                "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+                                "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                                "Maximum Mass Concentration (µg/mL)")]
+  
   data <- data.frame("Name" = data$Name, 
                      "Molecular Formula" = data$"Molecular Formula", 
                      "Molecular Weight" = as.numeric(data$"Molecular Weight"), 
                      "pKow" = as.numeric(data$"pKow"),
-                     "Reference Materials" = data$"Reference Materials")
+                     "Reference Materials" = data$"Reference Materials", 
+                     "Minimum Mass Fraction (µg/g)" = as.numeric(data$"Minimum Mass Fraction (µg/g)"), 
+                     "Maximum Mass Fraction (µg/g)" = as.numeric(data$"Maximum Mass Fraction (µg/g)"), 
+                     "Minimum Mass Concentration (µg/mL)" = as.numeric(data$"Minimum Mass Concentration (µg/mL)"), 
+                     "Maximum Mass Concentration (µg/mL)" = as.numeric(data$"Maximum Mass Concentration (µg/mL)"))
   
-  colnames(data) <- c("Name", "Molecular Formula", "Molecular Weight", "pKow", "Reference Materials")
+  colnames(data) <- c("Name", "Molecular Formula", "Molecular Weight", "pKow", "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+                      "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                      "Maximum Mass Concentration (µg/mL)")
   
   datatable(data, 
             options = list(pageLength = 10, responsive = FALSE), 
