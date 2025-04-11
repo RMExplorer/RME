@@ -3,12 +3,10 @@ output$spectrumDropdown <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
   spectrums <- c("Select an option", v$spectralData$Name[!is.na(v$spectralData$SpectralLink)])
   
-  selectInput(
+  selectizeInput(
     "spectrumSelection",
     "Select Spectrum below:",
-    choices = spectrums,
-    selectize = FALSE
-  )
+    choices = spectrums)
 })
 
 #when none or more than 1 analyte is selected, show this information
