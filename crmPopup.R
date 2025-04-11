@@ -88,6 +88,7 @@ observeEvent(input$clicked_name, {
     p(pubDate),
     DTOutput("popupanalyteTable"),
     uiOutput("showDownloadButton"),
+    easyClose = TRUE,
     footer = modalButton("Close")
   ))
 })
