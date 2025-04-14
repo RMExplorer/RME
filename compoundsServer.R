@@ -309,17 +309,14 @@ getTableData <- function(analytes){
     
     #find all the common crms
     allcrms <- data[, "CRMs"]
-    commonCrms <- c()
+    commonCrms <- allCrms
     for (i in 1:length(data)) {
       for (crmRow in allcrms){
         crmvec <- as.vector(strsplit(crmRow, ",")[[1]])
-        if(length(commonCrms) == 0) {
-          commonCrms <- crmvec
-        } else {
-          commonCrms <- intersect(commonCrms, crmvec)
-        }
+        commonCrms <- intersect(commonCrms, crmvec)
       }
     }
+    
     
     crmHTMLCol <- c()
       

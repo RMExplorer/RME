@@ -37,7 +37,10 @@ output$RMESearch <- renderUI({
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
-      p("Instructions: Add substances to the table below using the search dropdown above. The table is linked to the `Properties`, `pKow-MW Plot`, and `Spectral Data` tab. Select one row from the table in order to see its properties in the `Properties` tab, or its spectral data in the `Spectral Data` tab."),
+      p("Instructions: Add substances to the table below using the search dropdown above. 
+        The table is linked to the `Properties`, `pKow-MW Plot`, and `Spectral Data` tab. 
+        Select one row from the table in order to see its properties in the `Properties` tab, 
+        or its spectral data in the `Spectral Data` tab. Reference Materials that appear in all rows are highlighted in <em>red<em>."),
       conditionalPanel('!output.userLoggedIn', 
                        p(em("Log in if you want to save your selections or view your saved selections."))
                        ),
