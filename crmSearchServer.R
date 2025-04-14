@@ -122,6 +122,7 @@ output$crmTable <- renderDT({
             filter= list(position='top', clear = FALSE))
 })
 
+#button to add all crms to the table
 observeEvent(input$addAllCRMs, {
   req(input$addAllCRMs)
   crms <- recordDF$crm
@@ -130,6 +131,7 @@ observeEvent(input$addAllCRMs, {
   crmList(newList)
 })
 
+#fired when user trys to add the analytes from a crm to the substance table
 observeEvent(input$addCRM, {
   req(input$crmTable_rows_selected)
   selected <- crmTableData() %>% slice(input$crmTable_rows_selected)
