@@ -85,6 +85,7 @@ names(crms) = crms
 
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- function(analytes){
+  initialTime <- Sys.time()
   shinyjs::hide("customTable")
 
   data <- data.frame()
@@ -138,7 +139,7 @@ getTableData <- function(analytes){
       }
       #contains the info from PubChem
       info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)
-      
+
       #will search the repository with the name/inchikey the analyte was searched with
       link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                     gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
@@ -172,7 +173,7 @@ getTableData <- function(analytes){
       crms = sort(df$name)
       titles = sort(df$title)
       names(crms) = crms
-      
+
       #initializing the mass fraction and concentration of the compound 
       minMassFraction <- 999999
       maxMassFraction <- 0
@@ -183,69 +184,102 @@ getTableData <- function(analytes){
       crmHTML <- c()
       for (crm in crms) {
         if(crm != "No results"){
+          #html for crm column (adding the link for the modal)
           crmHTML <- append(crmHTML, HTML(paste0(
             "<a href=\"#\" class=\"view-info2\" data-name=", crm,">", crm, "</a>",sep="")))
+          
+          
+          #find the min/max mass concentration and fraction
+          #search repository for id
+          recordRow <- recordDF[recordDF$crm %in% crm,]
+          id <- recordRow$id
+          req(id)
+
+          #use id to get a link to the digital repository entry
+          link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
+          
+          #use doi content to get information (title, abstract, table, doi)
+          #overrides the ssl verifypeer so the webpage can be reached
+          h <- curl::new_handle()
+          curl::handle_setopt(h, ssl_verifypeer = 0)
+          ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
+          rm(h)
+          #sets analyte table data to null, unless crm contains analyte table
+          analyteTable <- NULL
+          if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
+            analyteTable <- data.frame(ddf[[3]])
+          }
+          
+          #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
+          if (!is.null(analyteTable)) {
+            massFrac <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
+            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)]
+            #remove NAs
+            units <- units[!is.na(massFrac)]
+            massFrac <- massFrac[!is.na(massFrac)]
+
+            if (length(units) == 1 && length(massFrac) > 0) {
+              if (units == "mg/g") {
+                massFrac <- 1000 * massFrac
+              } else if (units == "µg/kg") {
+                massFrac <- 1000 * massFrac
+              }
+            } else if (length(units) > 1 && length(massFrac) > 0) {
+              for (l in 1:length(units)){
+                if (units[[l]] == "mg/g") {
+                  massFrac[[l]] <- 1000 * massFrac[[l]]
+                } else if (units[[l]] == "µg/kg") {
+                  massFrac[[l]] <- 1000 * massFrac[[l]]
+                }
+              }
+            }
+            
+            if (length(massFrac) > 0 && min(massFrac) < minMassFraction) {
+              minMassFraction <- min(massFrac)
+            }
+            
+            if (length(massFrac) > 0 && max(massFrac) > maxMassFraction) {
+              maxMassFraction <- max(massFrac)
+            }
+            
+            massConc <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
+            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
+            #remove NAs
+            massConc <- massConc[!is.na(massConc)]
+            
+            #converting µmol/L tp µg/mL
+            if (length(units) == 1 && units == "µmol/L" && length(massConc) > 0) {
+              massConc = (massConc * as.numeric(info[["MolecularWeight"]])) / 1000
+            } else if (length(units) > 1 && length(massConc) > 0) {
+              for (l in 1:length(units)){
+                if (units[[l]] == "µmol/L") {
+                  massConc[[l]] = (massConc[[l]] * as.numeric(info[["MolecularWeight"]])) / 1000
+                }
+              }
+            }
+            
+            if (min(massConc) < minMassConc) {
+              minMassConc <- min(massConc)
+            }
+            
+            if (max(massConc) > maxMassConc) {
+              maxMassConc <- max(massConc)
+            }
+          }
+          
         } else {
           crmHTML <- append(crmHTML, HTML(paste0(
             "<p>", crm, "</p>",sep="")))
         }
+      }
+      
+      #if the min mass fraction/concentration were not changed
+      if (minMassFraction == 999999) {
+        minMassFraction <- 0
+      }
         
-        #find the min/max mass concentration and fraction
-        #search repository for id
-        recordRow <- recordDF[recordDF$crm %in% crm,]
-        id <- recordRow$id
-        
-        req(id)
-        
-        #use id to get a link to the digital repository entry
-        link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-        
-        #use doi content to get information (title, abstract, table, doi)
-        #overrides the ssl verifypeer so the webpage can be reached
-        h <- curl::new_handle()
-        curl::handle_setopt(h, ssl_verifypeer = 0)
-        ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-        rm(h)
-        #sets analyte table data to null, unless crm contains analyte table
-        analyteTable <- NULL
-        if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
-          analyteTable <- data.frame(ddf[[3]])
-        }
-        
-        #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
-        if (!is.null(analyteTable) && length(info[["MolecularWeight"]]) != 0) {
-          massFrac <- as.numeric(analyteTable$Value[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
-
-          if (min(massFrac) < minMassFraction) {
-            minMassFraction <- min(massFrac)
-          }
-          
-          if (max(massFrac) > maxMassFraction) {
-            maxMassFraction <- max(massFrac)
-          }
-          
-          massConc <- as.numeric(analyteTable$Value[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
-          units <- analyteTable$Unit[grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
-          
-          #converting µmol/L tp µg/mL
-          if (length(units) == 1 && units == "µmol/L") {
-            massConc = (massConc * as.numeric(info[["MolecularWeight"]])) / 1000
-          } else if (length(units) > 1 ) {
-            for (l in 1:length(units)){
-              if (units[[l]] == "µmol/L") {
-                massConc[[l]] = (massConc[[l]] * as.numeric(info[["MolecularWeight"]])) / 1000
-              }
-            }
-          }
-          
-          if (min(massConc) < minMassConc) {
-            minMassConc <- min(massConc)
-          }
-          
-          if (max(massConc) > maxMassConc) {
-            maxMassConc <- max(massConc)
-          }
-        }
+      if (minMassConc == 999999) {
+        minMassConc <- 0
       }
       
       #create the datarow with all the pubchem info
@@ -262,11 +296,12 @@ getTableData <- function(analytes){
         ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA),
         minMassFraction, maxMassFraction, minMassConc, maxMassConc
       )
+      
 
       #add the crm column to the table row
       data <- rbind(data, dataRow)
     }
-    
+
     data <- as.data.frame(data)
     
     colnames(data) <- c("Name", "CID", "Molecular Formula", 
@@ -277,6 +312,9 @@ getTableData <- function(analytes){
                         "Maximum Mass Concentration (µg/mL)")
     
   }
+  
+  print(Sys.time() - initialTime)
+  
   row.names(data) <- NULL
   
   shinyjs::show("customTable")
