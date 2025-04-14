@@ -21,7 +21,7 @@ output$RMESearch <- renderUI({
                      "Remove All Rows From Your Table", 
                      class="btn-outline-danger"),
         actionButton("addallSubstances", div("Add All Substances to the table", tooltip_ui("substanceaddTooltip", 
-                                                                                        "May take up to 2+ minutes. Not all substances from the NRC repository will be added due to search limitations."),
+                                                                                        "May take up to 3+ minutes. Not all substances from the NRC repository will be added due to search limitations."),
                                    style="display:flex;"), 
                      class="btn-outline-success"
         ),
