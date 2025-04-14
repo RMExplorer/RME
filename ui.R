@@ -97,10 +97,10 @@ ui <- navbarPage(
              uiOutput("properties"),                                            #in propertiesUI.R
            )
   ),
-  tabPanel("Pkow-MW Plot",
+  tabPanel("Polarity-MW Plot",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
-             div(HTML("<h3>pKow <i>versus</i> Molecular Weight Plot </h3>"),
+             div(HTML("<h3>Polarity <i>versus</i> Molecular Weight Plot </h3>"),
                  tooltip_ui("physico_chemical_instructions", 
                             "Shows all the substamces in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
                  style="display:flex;align-items:center;justify-content:center;"),
