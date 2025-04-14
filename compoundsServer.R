@@ -85,7 +85,7 @@ names(crms) = crms
 
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- function(analytes){
-  initialTime <- Sys.time()
+  # initialTime <- Sys.time()
   shinyjs::hide("customTable")
 
   data <- data.frame()
@@ -181,14 +181,8 @@ getTableData <- function(analytes){
       minMassConc <- 999999
       maxMassConc <- 0
       
-      crmHTML <- c()
       for (crm in crms) {
         if(crm != "No results"){
-          #html for crm column (adding the link for the modal)
-          crmHTML <- append(crmHTML, HTML(paste0(
-            "<a href=\"#\" class=\"view-info2\" data-name=", crm,">", crm, "</a>",sep="")))
-          
-          
           #find the min/max mass concentration and fraction
           #search repository for id
           recordRow <- recordDF[recordDF$crm %in% crm,]
@@ -212,25 +206,30 @@ getTableData <- function(analytes){
           
           #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
           if (!is.null(analyteTable)) {
-            massFrac <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
-            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)]
+            massFrac <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
+            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)]
             #remove NAs
             units <- units[!is.na(massFrac)]
             massFrac <- massFrac[!is.na(massFrac)]
-
+            
+            #convert units to µg/g (note: mg/kg is equivalent to µg/g so it is not converted)
             if (length(units) == 1 && length(massFrac) > 0) {
-              if (units == "mg/g") {
-                massFrac <- 1000 * massFrac
-              } else if (units == "µg/kg") {
-                massFrac <- 1000 * massFrac
-              }
+              if (units == "mg/g") {massFrac <- 1000 * massFrac} 
+              else if (units == "µg/kg") {massFrac <- 1000 * massFrac} 
+              else if (units == "g/g") {massFrac <- 1000000 * massFrac}
+              else if (units == "pg/g") {massFrac <- massFrac / 1000000}
+              else if (units == "ng/g") {massFrac <- massFrac / 1000}
+              else if (units == "kg/kg") {massFrac <- 1000000 * massFrac}
+              else if (units == "g/kg") {massFrac <- 1000 * massFrac}
             } else if (length(units) > 1 && length(massFrac) > 0) {
               for (l in 1:length(units)){
-                if (units[[l]] == "mg/g") {
-                  massFrac[[l]] <- 1000 * massFrac[[l]]
-                } else if (units[[l]] == "µg/kg") {
-                  massFrac[[l]] <- 1000 * massFrac[[l]]
-                }
+                if (units[[l]] == "mg/g") { massFrac[[l]] <- 1000 * massFrac[[l]]} 
+                else if (units[[l]] == "µg/kg") {massFrac[[l]] <- 1000 * massFrac[[l]]} 
+                else if (units[[l]] == "g/g") {massFrac[[l]] <- 1000000 * massFrac[[l]]}
+                else if (units[[l]] == "pg/g") {massFrac[[l]] <- massFrac[[l]] / 1000000}
+                else if (units[[l]] == "ng/g") {massFrac[[l]] <- massFrac[[l]] / 1000}
+                else if (units[[l]] == "kg/kg") {massFrac[[l]] <- 1000000 * massFrac[[l]]}
+                else if (units[[l]] == "g/kg") {massFrac[[l]] <- 1000 * massFrac[[l]]}
               }
             }
             
@@ -242,19 +241,22 @@ getTableData <- function(analytes){
               maxMassFraction <- max(massFrac)
             }
             
-            massConc <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
-            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE) | analytes[[i]] %in% analyteTable$Analyte) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
+            massConc <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
+            units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
             #remove NAs
             massConc <- massConc[!is.na(massConc)]
             
-            #converting µmol/L tp µg/mL
-            if (length(units) == 1 && units == "µmol/L" && length(massConc) > 0) {
-              massConc = (massConc * as.numeric(info[["MolecularWeight"]])) / 1000
+            #converting units to µg/mL (which is equivalent to mg/kg and mg/L )
+            if (length(units) == 1 && length(massConc) > 0) {
+              if (units == "µg/L") {massConc = massConc/1000}
+              else if (units == "mg/mL") {massConc = massConc * 1000}
+              else if (units == "g/mL") {massConc = massConc * 1000000}
+
             } else if (length(units) > 1 && length(massConc) > 0) {
               for (l in 1:length(units)){
-                if (units[[l]] == "µmol/L") {
-                  massConc[[l]] = (massConc[[l]] * as.numeric(info[["MolecularWeight"]])) / 1000
-                }
+                if (units[[l]] == "µg/L") { massConc[[l]] = massConc[[l]] / 1000} 
+                else if (units[[l]] == "mg/mL") {massConc[[l]] = massConc[[l]] * 1000}
+                else if (units[[l]] == "g/mL") {massConc[[l]] = massConc[[l]] * 1000000}
               }
             }
             
@@ -267,10 +269,7 @@ getTableData <- function(analytes){
             }
           }
           
-        } else {
-          crmHTML <- append(crmHTML, HTML(paste0(
-            "<p>", crm, "</p>",sep="")))
-        }
+        } 
       }
       
       #if the min mass fraction/concentration were not changed
@@ -293,27 +292,72 @@ getTableData <- function(analytes){
         ifelse(length(info[["XLogP"]]) != 0, info[["XLogP"]] * -1, NA), 
         ifelse(length(info[["ExactMass"]]) != 0, info[["ExactMass"]], NA), 
         ifelse(length(info[["TPSA"]]) != 0, info[["TPSA"]], NA),
-        ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA),
+        ifelse(length(crms) != 0, paste(crms, collapse = ","), NA),
         minMassFraction, maxMassFraction, minMassConc, maxMassConc
       )
       
-
+      #ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA)
       #add the crm column to the table row
       data <- rbind(data, dataRow)
     }
+    
+    colnames(data) <- c("Name", "CID", "Molecular Formula", 
+                        "Molecular Weight", "Isomeric Smiles", 
+                        "InchiKey", "pKow", "Exact Mass", "TPSA", "CRMs", "Minimum Mass Fraction (µg/g)", 
+                        "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                        "Maximum Mass Concentration (µg/mL)")
+    
+    #find all the common crms
+    allcrms <- data[, "CRMs"]
+    commonCrms <- c()
+    for (i in 1:length(data)) {
+      for (crmRow in allcrms){
+        crmvec <- as.vector(strsplit(crmRow, ",")[[1]])
+        if(length(commonCrms) == 0) {
+          commonCrms <- crmvec
+        } else {
+          commonCrms <- intersect(commonCrms, crmvec)
+        }
+      }
+    }
+    
+    crmHTMLCol <- c()
+      
+    for (crmRow in allcrms){
+      crmHTML <- c()
+      crmvec <- as.vector(strsplit(crmRow, ",")[[1]])
+      for (crm in crmvec) {
+        if(crm != "No results"){
+          #html for crm column (adding the link for the modal)
+          if (crm %in% commonCrms){
+            crmHTML <- paste(crmHTML, HTML(paste0(
+              '<a href="#" class="view-info2" data-name="', crm,'" style="color:red">', crm, "</a>",sep="")))
+          } else {
+            crmHTML <- paste(crmHTML, HTML(paste0(
+              '<a href="#" class="view-info2" data-name="', crm,'">', crm, "</a>",sep="")))
+          }
+        } else {
+          crmHTML <- paste(crmHTML, HTML(paste0(
+            "<p>", crm, "</p>",sep="")))
+        }
+      }
+      crmHTMLCol <- c(crmHTMLCol, crmHTML)
+    }
+
+    data <- cbind(data, crmHTMLCol)
 
     data <- as.data.frame(data)
     
     colnames(data) <- c("Name", "CID", "Molecular Formula", 
                         "Molecular Weight", "Isomeric Smiles", 
                         "InchiKey", "pKow", "Exact Mass", "TPSA", 
-                        "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+                        "CRMs", "Minimum Mass Fraction (µg/g)", 
                         "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
-                        "Maximum Mass Concentration (µg/mL)")
+                        "Maximum Mass Concentration (µg/mL)", "Reference Materials")
     
   }
   
-  print(Sys.time() - initialTime)
+  # print(Sys.time() - initialTime)
   
   row.names(data) <- NULL
   
