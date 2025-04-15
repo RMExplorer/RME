@@ -2,8 +2,27 @@
 
 #function to get all the user info from mongodb
 allUsers <- function(){
-  mongoUsers <- mongo(collection="users", db="rmeDB", url= connectionLink)
-  return(mongoUsers$find(query = '{}', fields = '{ "_id": false}'))
+  tryCatch(
+    {
+      mongoUsers <- mongo(collection="users", db="rmeDB", url= connectionLink)
+      return(mongoUsers$find(query = '{}', fields = '{ "_id": false}'))
+    },
+    error = function(cond) {
+      message(conditionMessage(cond))
+      output$urlerror <- renderText({
+        "We are currently unable to access mongoDB. You will be unable to register or login."
+      })
+      return(NULL)
+    },
+    warning = function(cond) {
+      message(conditionMessage(cond))
+      output$urlerror <- renderText({
+        "We are currently unable to access mongoDB. You will be unable to register or login."
+      })
+      return(NULL)
+    })
+  
+  
 }
 
 #gets the user information
