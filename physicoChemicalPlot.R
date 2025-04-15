@@ -1,6 +1,7 @@
 #allows filtering of plot data
 output$plotFilters <- renderUI({
-  req(length(customTableData()) > 0)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
   list(
     tags$div(tags$div(selectInput("pkLevel", 
                                   "Filter polarity (pKow)", 
@@ -27,14 +28,15 @@ output$plotFilters <- renderUI({
 
 #the data after all the filtering
 filteredData <- reactive({
-  req(length(customTableData()) > 0)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
   req(input$all)
   s <- input$customTable_rows_selected
   
   if(input$all == "FALSE") {
-    data <- customTableData()  %>% slice(s)
+    data <- result  %>% slice(s)
   } else {
-    data <- customTableData()
+    data <- result
   }
   
   #remove data points where pkow or mw is NA

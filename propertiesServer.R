@@ -18,7 +18,9 @@ output$selectCRMdropdown = renderUI({
 output$molecule <- renderPlot({
   req(length(input$customTable_rows_selected) == 1)
   req(v$crms != "No results")
-  selectedAnalyte <- customTableData() %>% slice(input$customTable_rows_selected)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  selectedAnalyte <- result %>% slice(input$customTable_rows_selected)
   smil <- selectedAnalyte$"Isomeric Smiles"
   mol <- parse.smiles(smil)[[1]]
   req(mol)
@@ -57,7 +59,9 @@ output$molecule <- renderPlot({
 
 output$currentCompoundName <- renderText({
   req(length(input$customTable_rows_selected) == 1)
-  data <- customTableData() %>% slice(input$customTable_rows_selected)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  data <- result %>% slice(input$customTable_rows_selected)
   paste('Showing Information on:', data$Name)
 })
 
@@ -108,7 +112,9 @@ observeEvent(input$showSpectrum, {
 #dropdown list of all the similar compound's inchikey. To be selected and added to the compounds table
 output$similarCompounds <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
-  data <- customTableData() %>% slice(input$customTable_rows_selected)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  data <- result %>% slice(input$customTable_rows_selected)
   req(data$CID)
   
   #finds all the similar compounds cids (converted to inchikey)
@@ -139,7 +145,10 @@ output$similarCompounds <- renderUI({
       synonyms <- fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
       results <- c(results, synonyms)
       
-      if (inchikeys[[i]] %in% customTableData()$InchiKey){
+      req(length(getTableData$result()) > 0)
+      tableData <- getTableData$result()
+      
+      if (inchikeys[[i]] %in% tableData$InchiKey){
         disable <- c(disable, 1)
       } else {
         disable <- c(disable, 0)
@@ -177,7 +186,9 @@ observeEvent(input$addSimilar, {
 #outputs the data pulled from pubchem (molecular formula, molecular weight, smiles, inchikey, exact mass, tpsa, pkow, pubchem link)
 output$information <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
-  data <- customTableData() %>% slice(input$customTable_rows_selected)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  data <- result %>% slice(input$customTable_rows_selected)
   req(data$InchiKey)
   synonyms <- NA
   if (!is.na(data$CID)){

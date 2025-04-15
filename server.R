@@ -23,6 +23,9 @@ library(parallel)                   #in order to do parallel web scraping
 library(jsonlite)                   #to work with json content
 library(webchem)
 library(mongolite)
+library(future)                     #in order to run long processes
+library(promises)                   #in order to run long processes
+future::plan(multisession)
 source("global.R")
 source("tooltip_ui.R")
 
