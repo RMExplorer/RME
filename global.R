@@ -53,17 +53,23 @@ recordDF <- c()
 #vector to store all the unique affiliates gotten from all the records
 allAffiliates <- c()
 allCrms <- c()
+allMaterials <- c()
 for (i in 1:length(records)){
   id <- gsub("oai:dr-dn.cisti-icist.nrc-cnrc.ca:", "", records[i] %>% xml_find_first(xpath=".//identifier") %>% xml_text())
   affiliation <- records[i] %>% xml_find_all(xpath=".//affiliation") %>% xml_text()
   title <- records[i] %>% xml_find_first(xpath='.//title') %>% xml_text()
   title <- str_split(title,":")[[1]][1]
-  recordDF <- rbind(recordDF, c(id, paste(unique(affiliation), collapse="; "), title))
+  materialType <- records[i] %>% xml_find_all(xpath='.//description') %>% xml_text()
+  materialType <- materialType[grepl("Material type", materialType)]
+  materialType <- str_split(materialType,":")[[1]][2] %>% trimws
+  recordDF <- rbind(recordDF, c(id, paste(unique(affiliation), collapse="; "), title, materialType))
   allCrms <- append(allCrms, title)
   allAffiliates <- append(allAffiliates, affiliation)
+  allMaterials <- append(allMaterials, materialType)
 }
-colnames(recordDF) <- c("id", "affiliation", "crm")
+colnames(recordDF) <- c("id", "affiliation", "crm", "materialType")
 recordDF <- as.data.frame(recordDF)
 ######### END ######### 
 
 affiliates <- as.list(unique(allAffiliates))
+materials <- as.list(unique(allMaterials))

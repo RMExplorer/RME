@@ -5,6 +5,7 @@ output$crmSearch <- renderUI({
       div(
         uiOutput("searchCRM"),
         uiOutput("searchAffiliate"),
+        uiOutput("searchMaterial"),
         style = "display:flex;gap:10px;"
       ),
       div(

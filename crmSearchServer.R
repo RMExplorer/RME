@@ -34,7 +34,7 @@ getCRMData <- function(crm){
       "<a href=\"#\" class=\"view-info\" data-name=", name,">", name, "</a>",sep="")))
   }
   
-  data <- data.frame("ID" = ids, "Name" = nameHTML, "Affiliates" = data$affiliation, "Format" = formats)
+  data <- data.frame("ID" = ids, "Name" = nameHTML, "Affiliates" = data$affiliation, "Format" = formats, "Material Type" = data$materialType)
   shinyjs::show("crmTable")
   return(data)
 }
@@ -84,6 +84,12 @@ output$searchAffiliate <- renderUI({
                  choices = append("", affiliates), selected = NULL, width="500px")
 })
 
+#the 'Select material type' drop down in the 'crm search' page
+output$searchMaterial <- renderUI({
+  #materials is calculated in global.R
+  selectizeInput(inputId = "selectedMaterial", "Select a Material Type", 
+                 choices = append("", materials), selected = NULL, width="500px")
+})
 
 #when a new affiliate is selected, add it to the table list
 observeEvent(input$selectedAffiliate, {
@@ -96,6 +102,18 @@ observeEvent(input$selectedAffiliate, {
   #refresh the select input so it doesnt show previous selection in the box
   updateSelectizeInput(session, inputId = "selectedAffiliate", label = "Select an Affiliate",
                        choices = append("", affiliates),
+                       selected = NULL)
+})
+
+#when a new affiliate is selected, add it to the table list
+observeEvent(input$selectedMaterial, {
+  req(input$selectedMaterial)
+  crms <- recordDF[grepl(input$selectedMaterial, recordDF$materialType), "crm"]
+  crmList(crms)
+  
+  #refresh the select input so it doesnt show previous selection in the box
+  updateSelectizeInput(session, inputId = "selectedMaterial", label = "Select a Material Type",
+                       choices = append("", materials),
                        selected = NULL)
 })
 
@@ -118,7 +136,9 @@ observeEvent(input$removeAllCRM, {
 
 output$crmTable <- renderDT({
   req(length(crmTableData()) > 0)
-  datatable(crmTableData()[, c("Name", "Affiliates", "Format")], escape = FALSE,
+  data <- crmTableData()
+  colnames(data) <- c("id", "Name", "Affiliates", "Format", "Material Type")
+  datatable(data[, c("Name", "Affiliates", "Format", "Material Type")], escape = FALSE,
             filter= list(position='top', clear = FALSE))
 })
 
