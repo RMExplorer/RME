@@ -76,7 +76,6 @@ warning = function(cond) {
 rm(h)
 
 nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
-
 nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
 nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
 
