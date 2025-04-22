@@ -1,5 +1,5 @@
 source("tooltip_ui.R")
-
+#useless addition
 # server  ----
 function(input, output, session) {
   #reactivepoll code: to pull data from google sheets, stored in reactivePolls.R
