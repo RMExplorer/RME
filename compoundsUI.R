@@ -25,10 +25,10 @@ output$RMESearch <- renderUI({
                                    style="display:flex;"), 
                      class="btn-outline-success"
         ),
-       actionButton("saveAnalytes", "Save Table Substances", 
+        input_task_button("saveAnalytes", "Save Table Substances", 
                     class="btn-outline-success"
        ),
-       actionButton("loadAnalytes", "Load Saved Substances", 
+       input_task_button("loadAnalytes", "Load Saved Substances", 
                     class="btn-outline-info"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"

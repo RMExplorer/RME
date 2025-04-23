@@ -643,7 +643,7 @@ observeEvent(input$uploadSubstances, {
   if (length(input$uploadSubstances) > 0) {
     data <- read.csv(input$uploadSubstances$datapath, header = TRUE)$x
     data <- as.list(data)
-    print(data)
+    req(data)
     yourTableAnalytes(data)
     #removes the modal
     removeModal() 
