@@ -132,18 +132,7 @@ ui <- navbarPage(
                         theme = bs_theme(version = 5, bootswatch = "sandstone"),
                         uiOutput("instructions")                                #in instructions.R (loaded in server.R)
                       )
-             )
-  ),
-  nav_item(
-    tags$ul(
-      tags$span(
-        conditionalPanel('!output.userLoggedIn', input_task_button("showLogin", "Login", class="btn-success")),                                          
-        shinyauthr::logoutUI(id = "logout")
-      ), 
-      style="list-style-type:none;display:flex;justify-content:space-between;padding:0;"
-    )
-  ),
-  nav_item(
-    div(input_task_button("register", "Register", class="btn-primary"))
+             ),
+             align = "right"
   )
 )

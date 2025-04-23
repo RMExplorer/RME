@@ -593,24 +593,22 @@ observeEvent(input$removeAnalyte, {
 
 #when the 'Remove All Rows...' button is clicked, remove all the names from the reactive variable yourTableAnalytes
 observeEvent(input$removeAllAnalytes, {
+  #removes any row selection
+  selectRows(proxy = dataTableProxy("customTable", session = session), 
+             selected = NULL)
+  
+  #empties the list
   newList <- list()
   yourTableAnalytes(newList)
 })
 
 #when the 'Save All Rows...' button is clicked and user is logged in, saves all the names from the reactive variable yourTableAnalytes to mongodb
 observeEvent(input$saveAnalytes, {
-  req(credentials()$user_auth)
-  usedNames <- allTables(credentials()$info$user)$tablename
-  yourTableAnalytes()
-  
   #modal asking user to name/reuse a name for their saved table
   showModal(
     modalDialog(
       title = "Save Your Table",
-      selectizeInput("givenName", "Enter a Name for Your New Table or Select a Saved Table to Update", choices = append("", usedNames), 
-                     selected = "", 
-                     options = list(create = TRUE)),
-      actionBttn("saveButton", "Save", color="success"),
+      downloadButton("downloadSavedSubstances", "Save", color="success"),
       easyClose = TRUE,
       footer = modalButton("Close")
     )
@@ -618,23 +616,21 @@ observeEvent(input$saveAnalytes, {
 })
 
 #saves the choosen in mongodb
-observeEvent(input$saveButton, {
-  insertTable(credentials()$info$user, yourTableAnalytes(), input$givenName)
-  
-  #removes the modal
-  removeModal() 
-})
+output$downloadSavedSubstances <- downloadHandler(
+  filename = function() {
+    paste("yourSubstances.csv")
+  },
+  content = function(file) {
+    write.csv(getTableData$result()$Name, file, row.names = FALSE)
+  }
+)
 
 #when the 'Load All Rows...' button is clicked and user is logged in, loads all the names to the reactive variable yourTableAnalytes from mongodb
 observeEvent(input$loadAnalytes, {
-  req(credentials()$user_auth)
-  savedAnalytes <- allTables(credentials()$info$user)$tablename
-
   showModal(
     modalDialog(
       title = "Load Your Table",
-      selectInput("choosenName", "Choose a Saved Table", savedAnalytes),
-      actionBttn("loadButton", "Load", color="success"),
+      fileInput("uploadSubstances", NULL, buttonLabel = "Upload...", accept = ".csv"),
       easyClose = TRUE,
       footer = modalButton("Close")
     )
@@ -643,14 +639,12 @@ observeEvent(input$loadAnalytes, {
 
 
 #loads the choosen table from mongodb when the load button is clicked
-observeEvent(input$loadButton, {
-  req(input$choosenName)
-  savedAnalytes <- specificTable(credentials()$info$user, input$choosenName)$table
-  savedAnalytes <- as.list(savedAnalytes[[1]])
-
-  if (length(savedAnalytes) > 0) {
-    yourTableAnalytes(savedAnalytes)
-    
+observeEvent(input$uploadSubstances, {
+  if (length(input$uploadSubstances) > 0) {
+    data <- read.csv(input$uploadSubstances$datapath, header = TRUE)$x
+    data <- as.list(data)
+    print(data)
+    yourTableAnalytes(data)
     #removes the modal
     removeModal() 
   }
@@ -724,6 +718,10 @@ observeEvent(input$addallSubstances, {
   
   #list of all unique values in the analyte column of the analyte tables
   allNames <- unique(allNames)
+  
+  #removes any row selection
+  selectRows(proxy = dataTableProxy("customTable", session = session), 
+             selected = NULL)
   
   #add the unique susbtances to the yourtableanalytes list
   newList <- append(allNames, yourTableAnalytes())

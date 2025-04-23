@@ -9,34 +9,25 @@ library(DT)
 library(rcdk)
 library(rinchi)
 library(PubChemR)                   #for pubchem
-library(shinyauthr)                 #for login/logout functionality
 library(rvest)                      #used to pull data from DOI
 library(xml2)                       #for parsing xml
 library(purrr)
 library(ggspectra)                  #an extension of ggplot, used to label peaks in graphs
 library(shinyjs)                    #to use js code easier with shiny
-library(googlesheets4)              #to access the google sheets
-library(googledrive)                #to access the files stored in google drive
 library(httr)                       #for doi access
 library(bsicons)                    #for icons
 library(parallel)                   #in order to do parallel web scraping
 library(jsonlite)                   #to work with json content
 library(webchem)
-library(mongolite)
 library(curl)
 library(future)                     #in order to run long processes
 library(promises)                   #in order to run long processes
-future::plan(multisession)
+plan(multisession, workers = 3)
 source("tooltip_ui.R")
 
 
 # server  ----
 function(input, output, session) {
-  #reactivepoll code: to pull data from google sheets, stored in reactivePolls.R
-  source("reactivePolls.R", local = TRUE)$value
-  
-  #stores all the code for the login functionality
-  source("loginCode.R", local = TRUE)$value
   
   #stores all the UI for the general search page
   source("compoundsUI.R", local = TRUE)$value

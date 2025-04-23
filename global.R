@@ -1,12 +1,8 @@
-library(mongolite)
 library(xml2)
 library(stringr)
 
 #types of spectrums
 types <- c("NMR", "FSMS", "MSMS")
-
-connectionLink <- "mongodb+srv://rmexplorerdata:djGC7HZnz2et455e@usercompounds.ae2s6.mongodb.net/?retryWrites=true&w=majority&appName=UserCompounds"
-
 
 #method to get url content (used to bypass ssl)
 geturl <- function(url, handle) {

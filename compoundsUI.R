@@ -25,15 +25,11 @@ output$RMESearch <- renderUI({
                                    style="display:flex;"), 
                      class="btn-outline-success"
         ),
-        conditionalPanel('output.userLoggedIn', 
-                         actionButton("saveAnalytes", "Save Table To Your Account", 
-                                      class="btn-outline-success"
-                                      )
-                         ),
-        conditionalPanel('output.userLoggedIn', 
-                         actionButton("loadAnalytes", "Load Table From Your Account", 
-                                      class="btn-outline-info", 
-                                     )
+       actionButton("saveAnalytes", "Save Table Substances", 
+                    class="btn-outline-success"
+       ),
+       actionButton("loadAnalytes", "Load Saved Substances", 
+                    class="btn-outline-info"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
@@ -41,9 +37,6 @@ output$RMESearch <- renderUI({
         The table is linked to the `Properties`, `pKow-MW Plot`, and `Spectral Data` tab. 
         Select one row from the table in order to see its properties in the `Properties` tab, 
         or its spectral data in the `Spectral Data` tab. Reference Materials that appear in all rows are highlighted in red."),
-      conditionalPanel('!output.userLoggedIn', 
-                       p(em("Log in if you want to save your selections or view your saved selections."))
-                       ),
       conditionalPanel(
         "$('#customTable').hasClass('recalculating') | $('#customTable').css('display') === 'none'", 
         tags$div(img(src='loading.gif', style = "height: 4rem;"), 
