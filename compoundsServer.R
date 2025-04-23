@@ -354,7 +354,7 @@ getTableData <- ExtendedTask$new(function(analytes){
     row.names(data) <- NULL
     return(data)
     
-  })
+  }, seed = TRUE)
 })
 
 #the analytes shown in the select analye drop down menu
