@@ -13,6 +13,7 @@ source("tooltip_ui.R")
 
 ui <- navbarPage(
   theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  inverse = TRUE,
   header = list(
   useShinyjs(),
   tags$style(HTML("
