@@ -212,7 +212,6 @@ getTableData <- ExtendedTask$new(function(analytes){
               #convert units to µg/g (note: mg/kg is equivalent to µg/g so it is not converted)
               if (length(units) > 0 && length(massFrac) > 0) {
                 for (l in 1:length(units)){
-                  print(paste("here", length(units), length(massFrac)))
                   if (units[[l]] == "mg/g") { massFrac[[l]] <- 1000 * massFrac[[l]]} 
                   else if (units[[l]] == "µg/kg") {massFrac[[l]] <- massFrac[[l]] / 1000} 
                   else if (units[[l]] == "g/g") {massFrac[[l]] <- 1000000 * massFrac[[l]]}
@@ -240,7 +239,6 @@ getTableData <- ExtendedTask$new(function(analytes){
               #converting units to µg/mL (which is equivalent to mg/kg and mg/L )
               if (length(units) > 0 && length(massConc) > 0) {
                 for (l in 1:length(units)){
-                  print(paste("here", length(units), length(massConc)))
                   if (units[[l]] == "µg/L") { massConc[[l]] = massConc[[l]] / 1000} 
                   else if (units[[l]] == "mg/mL") {massConc[[l]] = massConc[[l]] * 1000}
                   else if (units[[l]] == "g/mL") {massConc[[l]] = massConc[[l]] * 1000000}
