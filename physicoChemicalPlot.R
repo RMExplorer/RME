@@ -76,7 +76,10 @@ output$compoundList <- renderUI({
       paste("filteredData.csv")
     },
     content = function(file) {
-      write.csv(apply(filteredData(),2,as.character), file, row.names = FALSE)
+      write.csv(apply(filteredData()[, c("Name", "CID", "Molecular Weight", "Isomeric Smiles", 
+                                         "InchiKey", "pKow", "Exact Mass", "TPSA", "CRMs", "Minimum Mass Fraction (µg/g)", 
+                                         "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                                         "Maximum Mass Concentration (µg/mL)")],2,as.character), file, row.names = FALSE)
     }
   )
   
