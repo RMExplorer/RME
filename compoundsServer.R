@@ -212,7 +212,7 @@ getTableData <- ExtendedTask$new(function(analytes){
               #convert units to µg/g (note: mg/kg is equivalent to µg/g so it is not converted)
               if (length(units) == 1 && length(massFrac) > 0) {
                 if (units == "mg/g") {massFrac <- 1000 * massFrac} 
-                else if (units == "µg/kg") {massFrac <- 1000 * massFrac} 
+                else if (units == "µg/kg") {massFrac <- massFrac / 1000} 
                 else if (units == "g/g") {massFrac <- 1000000 * massFrac}
                 else if (units == "pg/g") {massFrac <- massFrac / 1000000}
                 else if (units == "ng/g") {massFrac <- massFrac / 1000}
