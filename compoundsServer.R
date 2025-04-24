@@ -221,7 +221,7 @@ getTableData <- ExtendedTask$new(function(analytes){
               } else if (length(units) > 1 && length(massFrac) > 0) {
                 for (l in 1:length(units)){
                   if (units[[l]] == "mg/g") { massFrac[[l]] <- 1000 * massFrac[[l]]} 
-                  else if (units[[l]] == "µg/kg") {massFrac[[l]] <- 1000 * massFrac[[l]]} 
+                  else if (units[[l]] == "µg/kg") {massFrac[[l]] <- massFrac[[l]] / 1000} 
                   else if (units[[l]] == "g/g") {massFrac[[l]] <- 1000000 * massFrac[[l]]}
                   else if (units[[l]] == "pg/g") {massFrac[[l]] <- massFrac[[l]] / 1000000}
                   else if (units[[l]] == "ng/g") {massFrac[[l]] <- massFrac[[l]] / 1000}
