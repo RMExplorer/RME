@@ -210,16 +210,9 @@ getTableData <- ExtendedTask$new(function(analytes){
               massFrac <- massFrac[!is.na(massFrac)]
               
               #convert units to µg/g (note: mg/kg is equivalent to µg/g so it is not converted)
-              if (length(units) == 1 && length(massFrac) > 0) {
-                if (units == "mg/g") {massFrac <- 1000 * massFrac} 
-                else if (units == "µg/kg") {massFrac <- massFrac / 1000} 
-                else if (units == "g/g") {massFrac <- 1000000 * massFrac}
-                else if (units == "pg/g") {massFrac <- massFrac / 1000000}
-                else if (units == "ng/g") {massFrac <- massFrac / 1000}
-                else if (units == "kg/kg") {massFrac <- 1000000 * massFrac}
-                else if (units == "g/kg") {massFrac <- 1000 * massFrac}
-              } else if (length(units) > 1 && length(massFrac) > 0) {
+              if (length(units) > 0 && length(massFrac) > 0) {
                 for (l in 1:length(units)){
+                  print(paste("here", length(units), length(massFrac)))
                   if (units[[l]] == "mg/g") { massFrac[[l]] <- 1000 * massFrac[[l]]} 
                   else if (units[[l]] == "µg/kg") {massFrac[[l]] <- massFrac[[l]] / 1000} 
                   else if (units[[l]] == "g/g") {massFrac[[l]] <- 1000000 * massFrac[[l]]}
@@ -241,16 +234,13 @@ getTableData <- ExtendedTask$new(function(analytes){
               massConc <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
               units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
               #remove NAs
+              units <- units[!is.na(massConc)]
               massConc <- massConc[!is.na(massConc)]
               
               #converting units to µg/mL (which is equivalent to mg/kg and mg/L )
-              if (length(units) == 1 && length(massConc) > 0) {
-                if (units == "µg/L") {massConc = massConc/1000}
-                else if (units == "mg/mL") {massConc = massConc * 1000}
-                else if (units == "g/mL") {massConc = massConc * 1000000}
-                
-              } else if (length(units) > 1 && length(massConc) > 0) {
+              if (length(units) > 0 && length(massConc) > 0) {
                 for (l in 1:length(units)){
+                  print(paste("here", length(units), length(massConc)))
                   if (units[[l]] == "µg/L") { massConc[[l]] = massConc[[l]] / 1000} 
                   else if (units[[l]] == "mg/mL") {massConc[[l]] = massConc[[l]] * 1000}
                   else if (units[[l]] == "g/mL") {massConc[[l]] = massConc[[l]] * 1000000}
