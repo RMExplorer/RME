@@ -17,7 +17,6 @@ output$selectCRMdropdown = renderUI({
 #for the sketch of the molecule in the Properties tab
 output$molecule <- renderPlot({
   req(length(input$customTable_rows_selected) == 1)
-  req(v$crms != "No results")
   req(length(getTableData$result()) > 0)
   result <- getTableData$result()
   selectedAnalyte <- result %>% slice(input$customTable_rows_selected)
