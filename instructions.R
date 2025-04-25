@@ -1,14 +1,14 @@
 output$instructions <- renderUI({
   HTML(paste(
     "<h3>General Search Page </h3>",
-    "<p>Use the drop downs to search for an Inchikey, Compound, IUPAC or any Keyword. There is a check box next to the search dropdown
+    "<p>Use the dropdown to search for an Inchikey, Compound, IUPAC or any Keyword. There is a check box next to the search dropdown
     that lets you pick whether you want to add the selected substance to the table or if you want the selected substance to replace 
     everything that is in the table.
     You can then select a compound from the table shown in order to display its properties on the Properties tab. 
     You can also select a substance from the table and see its spectral data (if it has any) on the Spectral Data tab.
     You can clear all your selection by clicking the 'Unselect All Rows' button located at the top right of the page. 
-    By loggining in, you will be given the option to save the table you have created for later use. 
-    You are allowed to create multiple tables.</p>",
+    You can save the substances you have loaded in the table by clicking the 'Save Table Substances' button. This will give you a .csv file.
+    If you want to view the same table later on, you can load it by clicking the 'Load Saved Substances' button and uploading the .csv file.</p>",
     "<br><hr><br>",
     
     "<h3>CRM Search Page </h3>",
@@ -21,15 +21,16 @@ output$instructions <- renderUI({
     "<br><hr><br>",
     
     "<h3>Properties Page </h3>",
-    "<p>When you have selected a singular substance from the table in the Subtance Table in the General Search Page, 
+    "<p>When you have selected a singular substance from the table in the General Search Page, 
     this page will show detailed information about the substance. 
-    There will be a `Similar Compounds` dropdown on this page which will display all the substances that are similar to the choosen one which 
-    exist in the NRC Repository. If you want, you can select a compound and then click the `Add Compound` button next to it in order to add 
-    it to the Subtance table.</p>",
+    There will be a `Similar Compounds` dropdown on this page which will display all the substances that are similar 
+    to the choosen one in the NRC Repository. If you want, you can select a compound and then click the `Add Compound`
+    button next to it in order to add it to the Subtance table in the General Search Page.</p>",
     "<br><hr><br>",
     
-    "<h3>Physico-chemical Properties Page </h3>",
-    "<p>Contains 4 dropdowns (Filter polarity (pKow), Filter Molecular Weight, Show Compound Name, Show All Analytes in the Substances Table or Only Selected Analytes) 
+    "<h3>Polarity-MW Plot Page </h3>",
+    "<p>Contains 4 dropdowns (Filter polarity (pKow), Filter Molecular Weight, Show Compound Name, Show All Analytes in the Substances Table 
+    or Only Selected Analytes) 
     which allow further filtering of the substances in the Substance Table.
     </p>",
     "<p>You will be able to see a list of compounds at the bottom. This list contains all the compounds that match the filters.
