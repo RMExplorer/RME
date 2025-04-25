@@ -124,7 +124,6 @@ output$similarCompounds <- renderUI({
   inchikeys <- fromJSON(paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
                               similarCIDs, 
                               "/property/InChIKey/JSON", sep=""))$PropertyTable$Properties$InChIKey
-  
   #searches the dr for the inchikeys to see if we have them in our repository
   searchIds <- gsub("/", "%2F", inchikeys)
   inchilink <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=&q=',
@@ -141,8 +140,13 @@ output$similarCompounds <- renderUI({
     if (any(grepl("urn:uuid:", d)) && inchikeys[[i]] != data$InchiKey){
       synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/", 
                             inchikeys[[i]],"/synonyms/JSON", sep="")
-      synonyms <- fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
-      results <- c(results, synonyms)
+      synonyms <- tryCatch({
+        fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
+      }, error = function(e) {
+          return(NA)
+      })
+      
+      if (length(synonyms) > 0 && !is.na(synonyms)){results <- c(results, synonyms)}
       
       req(length(getTableData$result()) > 0)
       tableData <- getTableData$result()
@@ -159,6 +163,8 @@ output$similarCompounds <- renderUI({
   
   #remove inchikey of the current page if its in the list
   results <- unique(results[results != data$InchiKey])
+  #remove any NAs
+  results <- results[!is.na(results)]
 
   list(
     div(pickerInput(inputId = "similarCompound", label = div(strong("Similar Compounds"), 
@@ -192,7 +198,11 @@ output$information <- renderUI({
   synonyms <- NA
   if (!is.na(data$CID)){
     synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", data$CID,"/synonyms/JSON", sep="")
-    synonyms <- fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]]
+    synonyms <- tryCatch({
+      fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]]
+    }, error = function(e) {
+      return(NA)
+    })
     synonyms <- synonyms[c(1:10)]
     synonyms <- synonyms[!is.na(synonyms)]
   }

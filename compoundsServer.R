@@ -115,7 +115,12 @@ getTableData <- ExtendedTask$new(function(analytes){
                                 retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)$CID,
                                 "/synonyms/JSON", sep="")
           
-          compoundName <- fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
+          compoundName <- tryCatch({
+            fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
+          }, error = function(e) {
+            return(analytes[[i]])
+          })
+          
         } else {
           #assumes that if the analyte isn't an inchikey, it is a name, and searches that in pubchem
           props <- get_properties(
@@ -268,7 +273,7 @@ getTableData <- ExtendedTask$new(function(analytes){
         
         #create the datarow with all the pubchem info
         dataRow <- c(
-          ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), 
+          ifelse(length(compoundName) > 0 && nchar(compoundName) > 0, compoundName, analytes[[i]]), 
           ifelse(length(info[["CID"]]) != 0, info[["CID"]], NA), 
           ifelse(length(info[["MolecularFormula"]]) != 0, info[["MolecularFormula"]], NA), 
           ifelse(length(info[["MolecularWeight"]]) != 0, info[["MolecularWeight"]], NA), 
