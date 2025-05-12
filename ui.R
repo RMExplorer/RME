@@ -20,33 +20,6 @@ ui <- f7Page(
         theme = "ios"
     ),
     f7TabLayout(
-        panels = tagList(
-            f7Panel(
-                id = "left-panel",
-                title = "Left Panel",
-                side = "left",
-                effect = "cover",
-                f7PanelMenu(
-                    id = "menu",
-                    f7PanelItem(
-                        tabName = "home",
-                        icon = f7Icon("house"),
-                        title = "Home"
-                    ),
-                    f7PanelItem(
-                        tabName = "search",
-                        icon = f7Icon("magnifyingglass"),
-                        title = "Search"
-                    ),
-                    f7PanelItem(
-                        tabName = "about",
-                        icon = f7Icon("info_circle"),
-                        title = "About"
-                    )
-                )
-            )
-        ),
-
         navbar = f7Navbar(
             title = "Reference Material Explorer",
             hairline = TRUE,
@@ -89,7 +62,7 @@ ui <- f7Page(
 
             f7Tab(
                 tabName = "search",
-                icon = f7Icon("magnifyingglass"),
+                icon = f7Icon("search"),
                 title = "Search",
                 
                 f7Tabs(
@@ -133,10 +106,90 @@ ui <- f7Page(
             ),
 
             f7Tab(
-                tabName = "about",
-                icon = f7Icon("info_circle"),
-                title = "About",
-                "This app helps you explore reference materials."
+                tabName = "properties",
+                icon = f7Icon("list_bullet"),
+                title = "Properties",
+                f7Block(
+                    uiOutput("properties")
+                )
+            ),
+
+            f7Tab(
+                tabName = "plot",
+                icon = f7Icon("chart_bar"),
+                title = "Polarity-MW Plot",
+                
+                f7BlockTitle("Polarity versus Molecular Weight Plot"),
+
+                f7Block(
+                    strong = TRUE,
+                    inset = TRUE,
+                    div(
+                    HTML("<h3 style='text-align:center;'>Polarity <i>vs.</i> Molecular Weight</h3>"),
+                    tooltip_ui("physico_chemical_instructions", 
+                        "Shows all the substances in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
+                    style = "display:flex;flex-direction:column;align-items:center;"
+                    )
+                ),
+
+                f7Card(
+                    plotlyOutput("plot", height = "70vh"),  # width is not necessary, mobile will scale
+                    class = "no-margin"
+                ),
+
+                f7Block(
+                    uiOutput("plotFilters"),
+                    style = "display:flex; justify-content:center;"
+                ),
+
+                f7Block(
+                    uiOutput("compoundList")
+                ),
+
+                f7Block(
+                    em("About the plot sectors: The quadrants represented on this plot follow the categories that were historically used by the Organic Analysis Working Group of the Consultative Committee for Amount of Substance (CCQM-OAWG). The Low/High Molecular Weight boundary is set at 500 and low/high polarity at pKow = -2. The OAWG has more recently eliminated the low/high polarity classification for the high MW quadrant but we chose to keep it in this app as we believe it provides valuable information."),
+                    style = "font-size: 0.9rem;"
+                )
+
+            ),
+
+            f7Tab(
+                tabName = "spectrum",
+                icon = f7Icon("waveform_path"),
+                title = "Spectral Data",
+                
+                f7Block(
+                    uiOutput("spectrumUI")
+                )
+            ),
+
+            f7Tab(
+                tabName = "more",
+                icon = f7Icon("archivebox"),
+                title = "More",
+                
+                f7Tabs(
+                    id = "moreTabs",
+                    f7Tab(
+                        tabName = "info",
+                        title = "CMC Information",
+                        active = TRUE,
+
+                        f7BlockTitle("CMC Information"),
+                        f7Block(
+                            DTOutput("kcdbTable")
+                        ),
+                    ),
+                    
+                    f7Tab(
+                        tabName = "instructions",
+                        title = "Instructions",
+
+                        f7Block(
+                            uiOutput("instructions")
+                        )
+                    )
+                )
             )
         )
     )
