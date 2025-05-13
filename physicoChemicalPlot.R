@@ -1,30 +1,42 @@
 #allows filtering of plot data
 output$plotFilters <- renderUI({
   req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  list(
-    tags$div(tags$div(selectInput("pkLevel", 
-                                  "Filter polarity (pKow)", 
-                                  choices = c("None", "Low", "High"), 
-                                  selected = "None"), 
-                      style = "padding:10px;width:200px;"),
-             tags$div(selectInput("mwLevel", 
-                                  "Filter Molecular Weight", 
-                                  choices = c("None", "Low", "High"), 
-                                  selected = "None"), 
-                      style = "padding:10px;width:200px;"),
-             tags$div(selectInput("showLabel", 
-                                  "Show Compound Name", 
-                                  choices = c("Yes", "No"), 
-                                  selected = "No"), 
-                      style = "padding:10px;width:200px;"),
-             tags$div(selectInput("all", 
-                                  "Show All Analytes in the Substances Table or Only Selected Analytes", 
-                                  c("All Analytes" = TRUE, "Only Selected Analytes" = FALSE), width='100%'),
-                      style = "padding:10px;width:600px;"),                            
-             style = "display:flex;flex-wrap: wrap;")
+  
+  div(
+    class = "filter-container",
+    
+    div(class = "filter-item",
+        selectInput("pkLevel", 
+                    "Filter polarity (pKow)", 
+                    choices = c("None", "Low", "High"), 
+                    selected = "None")
+    ),
+    
+    div(class = "filter-item",
+        selectInput("mwLevel", 
+                    "Filter Molecular Weight", 
+                    choices = c("None", "Low", "High"), 
+                    selected = "None")
+    ),
+    
+    div(class = "filter-item",
+        selectInput("showLabel", 
+                    "Show Compound Name", 
+                    choices = c("Yes", "No"), 
+                    selected = "No")
+    ),
+    
+    div(class = "filter-item full-width",
+        selectInput("all", 
+                    "Show All Analytes in the Substances Table or Only Selected Analytes", 
+                    choices = c("All Analytes" = TRUE, "Only Selected Analytes" = FALSE),
+                    selected = TRUE)
+    ),
+    
+    div(style = "margin-bottom: 30px;")  #spacer at the bottom
   )
 })
+
 
 #the data after all the filtering
 filteredData <- reactive({
