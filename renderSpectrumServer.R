@@ -79,8 +79,13 @@ output$spectrum <- renderPlotly({
         theme(legend.position="none")
   
       p_plotly <- ggplotly(p, tooltip=c("text"))
-  
-      p_plotly <- p_plotly %>%
+
+
+
+      print(metaData)
+
+      if (!(shinybrowser::get_device() == "Mobile")) {
+        p_plotly <- p_plotly %>%
         add_annotations( xref = "paper",
                          yref = "paper",
                          x=1,
@@ -136,9 +141,11 @@ output$spectrum <- renderPlotly({
                          y=0.72,
                          text=ifelse(any(grepl("Collision Energy", metaData[,1], ignore.case = TRUE)), 
                                      paste("Collision Energy:", metaData[grep("Collision Energy", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) 
+                         showarrow = F)
       
-      output$spectrumStatus <- renderText({})
+        output$spectrumStatus <- renderText({})
+      }
+       
       
       #download fsms data
       output$downloadSpectrumData <- downloadHandler(
@@ -192,58 +199,62 @@ output$spectrum <- renderPlotly({
       
       p_plotly <- ggplotly(p +ylim(-0.05*max(spectra$Intensity), NA), tooltip=c("text"))
       
-      p_plotly <- p_plotly %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=1,
-                         text=ifelse(any(grepl("DOI", metaData[,1], ignore.case = TRUE)), 
-                                     paste("DOI:", metaData[grep("DOI", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.96,
-                         text=ifelse(any(grepl("Substance", metaData[,1], ignore.case = TRUE)), 
-                                     paste("Substance:", metaData[grep("Substance", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.92,
-                         text=ifelse(any(grepl("InChIKey", metaData[,1], ignore.case = TRUE)), 
-                                     paste("InChIKey:", metaData[grep("InChIKey", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.88,
-                         text=ifelse(any(grepl("Instrument", metaData[,1], ignore.case = TRUE)), 
-                                     paste("Instrument:", metaData[grep("Instrument", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.84,
-                         text=ifelse(any(grepl("Frequency", metaData[,1], ignore.case = TRUE)), 
-                                     paste("Frequency:", metaData[grep("Frequency", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.80,
-                         text=ifelse(any(grepl("Type of Data", metaData[,1], ignore.case = TRUE)), 
-                                     paste("Type of Data:", metaData[grep("Type of Data", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) %>%
-        add_annotations( xref = "paper",
-                         yref = "paper",
-                         x=1,
-                         y=0.76,
-                         text=ifelse(any(grepl("solvent", metaData[,1], ignore.case = TRUE)), 
-                                     paste("Solvent:", metaData[grep("solvent", metaData[,1], ignore.case = TRUE), 2]), ""),
-                         showarrow = F) 
+      if (!(shinybrowser::get_device() == "Mobile")) {
+          p_plotly <- p_plotly %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=1,
+                          text=ifelse(any(grepl("DOI", metaData[,1], ignore.case = TRUE)), 
+                                      paste("DOI:", metaData[grep("DOI", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.96,
+                          text=ifelse(any(grepl("Substance", metaData[,1], ignore.case = TRUE)), 
+                                      paste("Substance:", metaData[grep("Substance", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.92,
+                          text=ifelse(any(grepl("InChIKey", metaData[,1], ignore.case = TRUE)), 
+                                      paste("InChIKey:", metaData[grep("InChIKey", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.88,
+                          text=ifelse(any(grepl("Instrument", metaData[,1], ignore.case = TRUE)), 
+                                      paste("Instrument:", metaData[grep("Instrument", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.84,
+                          text=ifelse(any(grepl("Frequency", metaData[,1], ignore.case = TRUE)), 
+                                      paste("Frequency:", metaData[grep("Frequency", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.80,
+                          text=ifelse(any(grepl("Type of Data", metaData[,1], ignore.case = TRUE)), 
+                                      paste("Type of Data:", metaData[grep("Type of Data", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) %>%
+          add_annotations( xref = "paper",
+                          yref = "paper",
+                          x=1,
+                          y=0.76,
+                          text=ifelse(any(grepl("solvent", metaData[,1], ignore.case = TRUE)), 
+                                      paste("Solvent:", metaData[grep("solvent", metaData[,1], ignore.case = TRUE), 2]), ""),
+                          showarrow = F) 
+        
+        output$spectrumStatus <- renderText({})
+      }
+
       
-      output$spectrumStatus <- renderText({})
       
       #download nmr data
       output$downloadSpectrumData <- downloadHandler(

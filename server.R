@@ -27,7 +27,7 @@ source("tooltip_ui.R")
 
 
 # server  ----
-function(input, output, session) {
+server <- function(input, output, session) {
   
   #stores all the UI for the general search page
   source("compoundsUI.R", local = TRUE)$value

@@ -670,7 +670,7 @@ output$customTable <- renderDT({
                       "Maximum Mass Concentration (µg/mL)")
   
   datatable(data, 
-            options = list(pageLength = 10, responsive = FALSE), 
+            options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE), 
             filter= list(position='top', clear = FALSE), escape = FALSE)
 })
 

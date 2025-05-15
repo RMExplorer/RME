@@ -105,7 +105,7 @@ output$hasSpectrum <- renderUI ({
 
 #opens the spectral data tab
 observeEvent(input$showSpectrum, {
-  updateTabsetPanel(session = session, inputId = "tabs", selected = "Spectral Data")
+  updateF7Tabs(session, id = "mainTabs", selected = "spectrum") 
 })
 
 #dropdown list of all the similar compound's inchikey. To be selected and added to the compounds table

@@ -10,10 +10,11 @@ library(shinyauthr) #for login/logout functionality
 library(shinyjs) #to use js code easier with shiny
 library(bsicons)                    #for icons
 library(shinyMobile)
+library(shinybrowser)
 source("tooltip_ui.R")
 
-
 ui <- f7Page(
+    shinybrowser::detect(),
     title = "Reference Material Explorer",
     options = list(
         dark = FALSE,
@@ -27,6 +28,7 @@ ui <- f7Page(
         ),
     
         f7Tabs(
+            id = "mainTabs",
             animated = TRUE,
             f7Tab(
                 tabName = "home",
