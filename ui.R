@@ -40,7 +40,7 @@ ui <- f7Page(
                     strong = TRUE,
                     inset = TRUE,
                     style = "text-align: center;",
-                    tags$img(src = 'Icon.png', style = "max-width: 90%; height: auto;"),
+                    tags$img(src = 'Icon.png', style = "max-width: 90%; max-height: 600px;"),
                     tags$h1("Reference Material Explorer", style = "font-weight: bold;")
                 ),
                 
