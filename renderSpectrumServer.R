@@ -80,10 +80,6 @@ output$spectrum <- renderPlotly({
   
       p_plotly <- ggplotly(p, tooltip=c("text"))
 
-
-
-      print(metaData)
-
       if (!(shinybrowser::get_device() == "Mobile")) {
         p_plotly <- p_plotly %>%
         add_annotations( xref = "paper",

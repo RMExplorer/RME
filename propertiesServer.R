@@ -51,10 +51,15 @@ output$molecule <- renderPlot({
        type = "n")
   
   rasterImage(img, 1,1, 100,100)
-  
-}, height = function() {
-  session$clientData$output_molecule_width
-})
+},
+
+  height = function () {
+    session$clientData$output_molecule_height
+  },
+  width = function () {
+    session$clientData$output_molecule_height
+  }
+)
 
 output$currentCompoundName <- renderText({
   req(length(input$customTable_rows_selected) == 1)
@@ -175,8 +180,8 @@ output$similarCompounds <- renderUI({
                                              style="display:flex;"), 
                       choices = results, 
                     choicesOpt = list(disabled = disable),
-                      width="400px"),
-    actionButton("addSimilar", "Add Compound", class="btn-info", style="height:fit-content;margin-top:15px;"), 
+                      width="320px"),
+    actionButton("addSimilar", "Add Compound", class="btn-info", style="height:fit-content;width:100px;margin-top:15px;"), 
     style = "display:flex;gap:10px;align-items:center;"
     )
   )

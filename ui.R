@@ -23,8 +23,7 @@ ui <- f7Page(
     f7TabLayout(
         navbar = f7Navbar(
             title = "Reference Material Explorer",
-            hairline = TRUE,
-            shadow = TRUE
+            hairline = TRUE
         ),
     
         f7Tabs(

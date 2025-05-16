@@ -1,6 +1,13 @@
 #contains the properties UI
 #the rendering for the text content is done in propertiesText.R
 output$properties <- renderUI({
+  if (shinybrowser::get_device() == "Mobile") {
+    plotSize = "44vh"
+  }
+  else {
+    plotSize = "70vh"
+  }
+
   list(
     conditionalPanel("$('#summary').hasClass('recalculating') | $('#html').hasClass('shiny-busy')", 
                      fixedPanel(
@@ -14,9 +21,9 @@ output$properties <- renderUI({
                      )),
     div(uiOutput("propertiesNothingSelected"), style="display:flex;justify-content:center;font-size:2rem;"),
     fluidRow(
-      column(5, align = "left",
+      column(5, align = "center",
              br(),
-             plotOutput('molecule', height = "70vh")
+             plotOutput('molecule', height = plotSize)
       ),
       column(7, align="left",
              h4(textOutput('currentCompoundName')),
