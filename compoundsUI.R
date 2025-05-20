@@ -14,20 +14,18 @@ output$RMESearch <- renderUI({
       ),
       textOutput("urlerror"),
       div(
-        actionButton("removeAnalyte", 
-                     "Remove Selected Rows From Your Table", 
-                     class="btn-outline-warning"),
-        actionButton("removeAllAnalytes", 
-                     "Remove All Rows From Your Table", 
-                     class="btn-outline-danger"),
-        actionButton("addallSubstances", div("Add All Substances to the table", tooltip_ui("substanceaddTooltip", 
-                                                                                        "May take up to 3+ minutes. Not all substances from the NRC repository will be added due to search limitations."),
-                                   style="display:flex;"), 
-                     class="btn-outline-success"
-        ),
+        f7Button("removeAnalyte", "Remove Selected Rows From Your Table", color = "orange"),
+        f7Button("removeAllAnalytes", "Remove All Rows From Your Table", color = "red"),
+
+        f7Button(inputId = "addallSubstances", "Add All Substances to the table", color = "green"),
+        #f7Tooltip(
+          #tag = "addallSubstances",
+          #text = "May take up to 3+ minutes. Not all substances from the NRC repository will be added due to search limitations."
+        #),
+
         input_task_button("saveAnalytes", "Save Table Substances", 
                     class="btn-outline-success"
-       ),
+        ),
        input_task_button("loadAnalytes", "Load Saved Substances", 
                     class="btn-outline-info"
         ),
