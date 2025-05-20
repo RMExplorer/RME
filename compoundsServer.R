@@ -250,11 +250,12 @@ getTableData <- ExtendedTask$new(function(analytes){
                 }
               }
               
-              if (min(massConc) < minMassConc) {
+              
+              if (length(massConc) > 0 && min(massConc) < minMassConc) {
                 minMassConc <- min(massConc)
               }
               
-              if (max(massConc) > maxMassConc) {
+              if (length(massConc) > 0 && max(massConc) > maxMassConc) {
                 maxMassConc <- max(massConc)
               }
             }

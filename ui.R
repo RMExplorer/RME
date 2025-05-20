@@ -78,14 +78,11 @@ ui <- f7Page(
                         ),
 
                         f7BlockTitle("Substance Table"),
+
+                        div(style = "float: right; width:15%", f7Button("unselect", "Unselect All Rows", color = "red")),
+
                         f7Block(
                             uiOutput("RMESearch")
-                        ),
-
-                        absolutePanel(
-                            top = 100, right = 0, width = 200,
-                            style = "border:none;border-radius:25px;display:flex;justify-content:center;",
-                            actionButton("unselect", "Unselect All Rows", class = "btn-danger")
                         )
                     ),
                     
@@ -93,14 +90,10 @@ ui <- f7Page(
                         tabName = "crm",
                         title = "CRM Search",
 
+                        div(style = "float: right; width:15%", f7Button("unselectCRMs", "Unselect All Rows", color = "red")),
+
                         f7Block(
                             uiOutput("crmSearch")
-                        ),
-
-                        absolutePanel(
-                            top = 100, right = 0, width = 200,
-                            style = "border:none;border-radius:25px;display:flex;justify-content:center;",
-                            actionButton("unselectCRMs", "Unselect All Rows", class = "btn-danger")
                         )
                     )
                 )
