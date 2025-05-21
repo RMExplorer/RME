@@ -77,11 +77,46 @@ ui <- f7Page(
                             htmltools::findDependencies(selectInput("toto", "toto", choices = NULL))  # Ensures selectizeInput loads properly
                         ),
 
-                        f7BlockTitle("Substance Table"),
-
-                        div(style = "float: right; width:15%", f7Button("unselect", "Unselect All Rows", color = "red")),
+                        div(
+                            style = "display: flex; align-items: center; justify-content: space-between; width: 100%;",
+                            div(
+                                style = "display: flex; align-items: center; gap: 8px; padding: 10px",
+                                tags$div(style = "font-weight: bold; font-size: 17px;", "Substance Table"),
+                                f7Tooltip(
+                                    f7Icon("info_circle"),
+                                    text = "Search your Compound, Inchikey, IUPAC, or Keyword in the NRC Repository. If no results are found, will enquire the closest match from PubChem and search the repository again."
+                                )
+                            ),
+                            div(
+                                style = "display: flex; align-items: center;",
+                                f7Button(inputId = "unselect", label = "Unselect All Rows", color = "red")
+                            )
+                        ),
 
                         f7Block(
+                            div(
+                                style = "display: flex; align-items: center; gap: 8px; margin-bottom: 10px;",
+                                uiOutput("searchAnalyte"),
+                                f7Checkbox("additiveTable", label ="Add to the Table", TRUE),
+                                f7Tooltip(
+                                    f7Icon("info_circle"),
+                                    text = "Un-select this if you want to remove all entries in the table before adding a new substance."
+                                )
+                            ),
+                            
+                            f7Flex(
+                                style = "display: flex; align-items: center; gap: 8px;",
+
+                                f7Button("removeAnalyte", "Remove Selected Rows", color = "orange"),
+                                f7Button("removeAllAnalytes", "Remove All Rows", color = "red"),
+                                f7Tooltip(
+                                    f7Button(inputId = "addallSubstances", label = "Add All Substances", color = "green"),
+                                    text = "May take up to 3+ minutes. Not all substances from the NRC repository will be added due to search limitations."
+                                ),
+                                f7Button(inputId = "saveAnalytes", label = "Save Table", color = "green"),
+                                f7Button(inputId = "loadAnalytes", label = "Load Table", color = "blue")
+                            ),
+                            
                             uiOutput("RMESearch")
                         )
                     ),
@@ -172,7 +207,7 @@ ui <- f7Page(
                         f7BlockTitle("CMC Information"),
                         f7Block(
                             DTOutput("kcdbTable")
-                        ),
+                        )
                     ),
                     
                     f7Tab(

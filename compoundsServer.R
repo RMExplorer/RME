@@ -387,14 +387,14 @@ yourTableAnalytes <- reactiveVal(list("Domoic Acid", "Azaspiracid-1", "Azaspirac
 
 #the 'Select an Analyte' drop down in the 'Substances' page which also allows users to enter their own analyte names
 output$searchAnalyte <- renderUI({
-  selectizeInput(inputId = "selectAnalyte", div("Search NRC Repository", 
-                                                tooltip_ui("searchTooltip", 
-                                                           "Search your Compound, Inchikey, IUPAC, or Keyword in the NRC Repository. If no results are found, will enquire the closest match from PubChem and search the repository again."),
-                                                style="display:flex;"), 
-                 choices = append("", analytes()), 
-                 selected = "", 
-                 options = list(create = TRUE, delimiter=';'),
-                 width="350px")
+  selectizeInput(
+    inputId = "selectAnalyte", 
+    div("Search NRC Repository",style="display:flex;"), 
+    choices = append("", analytes()), 
+    selected = "", 
+    options = list(create = TRUE, delimiter=';'),
+    width="350px"
+  )
 })
 
 # function that takes in a doi and extracts the mass spectrum file from it
