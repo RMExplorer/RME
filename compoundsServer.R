@@ -468,7 +468,7 @@ observeEvent(input$customTable_rows_selected, {
     #for each entry/certificate, add it's id (NA if it doesn't have one) to spectralData
     for (i in 1:length(entries)){
       id <- entries[i] %>% xml_find_first(xpath="./id") %>% xml_text()
-      spectralLink <- xml_attr(entries[i] %>% xml_find_all(xpath="./link[contains(@title, 'Download dataset')]"), "href")
+      spectralLink <- xml_attr(entries[i] %>% xml_find_all(xpath="./link[contains(@title, 'View spectrum')]"), "href")
       dataNames <- rbind(dataNames, ifelse(length(spectralLink) > 0, 
                                            str_split(entries[i] %>% xml_find_first(xpath="./title") %>% xml_text(), ":")[[1]][1], 
                                            NA))
