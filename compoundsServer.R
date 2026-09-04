@@ -277,7 +277,7 @@ getTableData <- ExtendedTask$new(function(analytes){
           ifelse(length(info[["CID"]]) != 0, info[["CID"]], NA), 
           ifelse(length(info[["MolecularFormula"]]) != 0, info[["MolecularFormula"]], NA), 
           ifelse(length(info[["MolecularWeight"]]) != 0, info[["MolecularWeight"]], NA), 
-          ifelse(length(info[["IsomericSMILES"]]) != 0, info[["IsomericSMILES"]], NA), 
+          ifelse(length(info[["SMILES"]]) != 0, info[["SMILES"]], NA), 
           ifelse(length(info[["InChIKey"]]) != 0, info[["InChIKey"]], NA), 
           ifelse(length(info[["XLogP"]]) != 0, info[["XLogP"]] * -1, NA), 
           ifelse(length(info[["ExactMass"]]) != 0, info[["ExactMass"]], NA), 
