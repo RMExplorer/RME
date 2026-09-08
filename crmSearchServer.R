@@ -54,7 +54,7 @@ observeEvent(input$selectCRM, {
   req(input$selectCRM)
   #will search the repository with the name/inchikey the analyte was searched with
   link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                gsub(' ','+', input$selectCRM, '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1'))
+                gsub(' ','+', input$selectCRM), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
   
   #overrides the ssl verifypeer so the webpage can be reached on shinyapps
   h <- curl::new_handle()
