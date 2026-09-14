@@ -49,10 +49,13 @@ observeEvent(input$clicked_name, {
   curl::handle_setopt(h, ssl_verifypeer = 0)
   ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
   rm(h)
-  #sets analyte table data to null, unless crm contains analyte table
-
-  if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
-    analyteTable(data.frame(ddf[[3]]))
+  
+  # find index of analyte table in digital repository entry
+  analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+  
+  # set analyte table data to null, unless crm contains analyte table
+  if(length(analyte_idx) >= 1){
+    analyteTable(data.frame(ddf[[analyte_idx[1]]]))
   } else {
     analyteTable(NULL)
   }
