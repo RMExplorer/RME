@@ -645,29 +645,42 @@ observeEvent(input$uploadSubstances, {
 
 #loads the data table in the 'Compounds' page using the gettabledata result
 output$customTable <- renderDT({
-  req(length(getTableData$result()) > 0)
   result <- getTableData$result()
-  data <- result[, c("Name", 
-                                "Molecular Formula", 
-                                "Molecular Weight", 
-                                "pKow", 
-                                "Reference Materials", "Minimum Mass Fraction (µg/g)", 
-                                "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
-                                "Maximum Mass Concentration (µg/mL)")]
+  cols <- c("Name", 
+            "Molecular Formula", 
+            "Molecular Weight", 
+            "pKow", 
+            "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+            "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+            "Maximum Mass Concentration (µg/mL)")
   
-  data <- data.frame("Name" = data$Name, 
-                     "Molecular Formula" = data$"Molecular Formula", 
-                     "Molecular Weight" = as.numeric(data$"Molecular Weight"), 
-                     "pKow" = as.numeric(data$"pKow"),
-                     "Reference Materials" = data$"Reference Materials", 
-                     "Minimum Mass Fraction (µg/g)" = as.numeric(data$"Minimum Mass Fraction (µg/g)"), 
-                     "Maximum Mass Fraction (µg/g)" = as.numeric(data$"Maximum Mass Fraction (µg/g)"), 
-                     "Minimum Mass Concentration (µg/mL)" = as.numeric(data$"Minimum Mass Concentration (µg/mL)"), 
-                     "Maximum Mass Concentration (µg/mL)" = as.numeric(data$"Maximum Mass Concentration (µg/mL)"))
-  
-  colnames(data) <- c("Name", "Molecular Formula", "Molecular Weight", "pKow", "Reference Materials", "Minimum Mass Fraction (µg/g)", 
-                      "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
-                      "Maximum Mass Concentration (µg/mL)")
+  if (is.null(result) || !is.data.frame(result) || nrow(result) == 0) {
+    data <- data.frame("Name" = character(0),
+                       "Molecular Formula" = character(0),
+                       "Molecular Weight" = numeric(0),
+                       "pKow" = numeric(0),
+                       "Reference Materials" = character(0),
+                       "Minimum Mass Fraction (µg/g)" = numeric(0),
+                       "Maximum Mass Fraction (µg/g)" = numeric(0),
+                       "Minimum Mass Concentration (µg/mL)" = numeric(0),
+                       "Maximum Mass Concentration (µg/mL)" = numeric(0),
+                       check.names = FALSE)
+  } else {
+    data <- result[, cols]
+    data <- data.frame("Name" = data$Name, 
+                       "Molecular Formula" = data$"Molecular Formula", 
+                       "Molecular Weight" = as.numeric(data$"Molecular Weight"), 
+                       "pKow" = as.numeric(data$"pKow"),
+                       "Reference Materials" = data$"Reference Materials", 
+                       "Minimum Mass Fraction (µg/g)" = as.numeric(data$"Minimum Mass Fraction (µg/g)"), 
+                       "Maximum Mass Fraction (µg/g)" = as.numeric(data$"Maximum Mass Fraction (µg/g)"), 
+                       "Minimum Mass Concentration (µg/mL)" = as.numeric(data$"Minimum Mass Concentration (µg/mL)"), 
+                       "Maximum Mass Concentration (µg/mL)" = as.numeric(data$"Maximum Mass Concentration (µg/mL)"),
+                       check.names = FALSE)
+    colnames(data) <- c("Name", "Molecular Formula", "Molecular Weight", "pKow", "Reference Materials", "Minimum Mass Fraction (µg/g)", 
+                        "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
+                        "Maximum Mass Concentration (µg/mL)")
+  }
   
   datatable(data, 
             options = list(pageLength = 10, responsive = FALSE), 
