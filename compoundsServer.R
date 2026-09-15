@@ -11,46 +11,46 @@ xml_to_dataframe <- function(nodeset){
   return(tibble::as_tibble(result))
 }
 
-#function that returns all the tables saved by a particular user
-allTables <- function(username) {
-  mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-  req(mongoUserCompounds)
-  return(mongoUserCompounds$find(query = paste('{"username" : "', username, '"}', sep=""), fields = '{}'))
-}
-
-#function to get the specific table from mongodb, given someones username and the name of the table
-specificTable <- function(username, tablename) {
-  mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-  req(mongoUserCompounds)
-  return(mongoUserCompounds$find(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""), fields = '{}'))
-}
-
-#inserts a new table or updates (by deleting, then inserting) the table saved by a user
-insertTable <- function(username, tableValues, tablename){
-  mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-  req(mongoUserCompounds)
-  
-  #check if the table already exists for the user & delete it if it does
-  mongoUserCompounds$remove(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""))
-  
-  arrayString <- "["
-  #convert the list of values into a quoted + comma seperated list
-  for (i in 1:length(tableValues)){
-    arrayString <- paste(arrayString, '"', tableValues[[i]], '",', sep="")
-  }
-  #remove the last comma added
-  arrayString <- substr(arrayString, 1, nchar(arrayString)-1)
-  #add the closing brace
-  arrayString <- paste(arrayString, "]", sep="")
-  
-  #make the values into json string in order to insert it into the DB
-  tableVals <- c(paste('{"username": "', username, '",',
-                       '"table": ', arrayString, ",",
-                       '"tablename": "', tablename, '"}', sep=""))
-  
-  #add it to mongodb
-  mongoUserCompounds$insert(tableVals)
-}
+# #function that returns all the tables saved by a particular user
+# allTables <- function(username) {
+#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
+#   req(mongoUserCompounds)
+#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '"}', sep=""), fields = '{}'))
+# }
+# 
+# #function to get the specific table from mongodb, given someones username and the name of the table
+# specificTable <- function(username, tablename) {
+#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
+#   req(mongoUserCompounds)
+#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""), fields = '{}'))
+# }
+# 
+# #inserts a new table or updates (by deleting, then inserting) the table saved by a user
+# insertTable <- function(username, tableValues, tablename){
+#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
+#   req(mongoUserCompounds)
+#   
+#   #check if the table already exists for the user & delete it if it does
+#   mongoUserCompounds$remove(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""))
+#   
+#   arrayString <- "["
+#   #convert the list of values into a quoted + comma seperated list
+#   for (i in 1:length(tableValues)){
+#     arrayString <- paste(arrayString, '"', tableValues[[i]], '",', sep="")
+#   }
+#   #remove the last comma added
+#   arrayString <- substr(arrayString, 1, nchar(arrayString)-1)
+#   #add the closing brace
+#   arrayString <- paste(arrayString, "]", sep="")
+#   
+#   #make the values into json string in order to insert it into the DB
+#   tableVals <- c(paste('{"username": "', username, '",',
+#                        '"table": ', arrayString, ",",
+#                        '"tablename": "', tablename, '"}', sep=""))
+#   
+#   #add it to mongodb
+#   mongoUserCompounds$insert(tableVals)
+# }
 
 #overrides the ssl verifypeer so the webpage can be reached
 h <- curl::new_handle()

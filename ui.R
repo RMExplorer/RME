@@ -6,7 +6,7 @@ library(dplyr)
 library(shiny)
 library(shinyWidgets)
 library(DT)
-library(shinyauthr) #for login/logout functionality
+#library(shinyauthr) #for login/logout functionality
 library(shinyjs) #to use js code easier with shiny
 library(bsicons)                    #for icons
 source("tooltip_ui.R")
