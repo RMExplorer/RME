@@ -52,40 +52,41 @@ xml_to_dataframe <- function(nodeset){
 #   mongoUserCompounds$insert(tableVals)
 # }
 
-#overrides the ssl verifypeer so the webpage can be reached
-h <- curl::new_handle()
-curl::handle_setopt(h, ssl_verifypeer = 0)
-tryCatch({
-  d = xml_children(read_xml(geturl('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', h)))
-},
-error = function(cond) {
-  message(conditionMessage(cond))
-  output$urlerror <- renderText({
-    "We are currently unable to access the nrc digital repository"
-  })
-  NA
-},
-warning = function(cond) {
-  message(conditionMessage(cond))
-  output$urlerror <- renderText({
-    "We are currently unable to access the nrc digital repository"
-  })
-  NULL
-})
-
-rm(h)
-
-nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
-nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
-nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
-
-crms = sort(nrc_dr_all$name)
+# #overrides the ssl verifypeer so the webpage can be reached
+# h <- curl::new_handle()
+# curl::handle_setopt(h, ssl_verifypeer = 0)
+# tryCatch({
+#   d = xml_children(read_xml(geturl('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', h)))
+# },
+# error = function(cond) {
+#   message(conditionMessage(cond))
+#   output$urlerror <- renderText({
+#     "We are currently unable to access the nrc digital repository"
+#   })
+#   NA
+# },
+# warning = function(cond) {
+#   message(conditionMessage(cond))
+#   output$urlerror <- renderText({
+#     "We are currently unable to access the nrc digital repository"
+#   })
+#   NULL
+# })
+# 
+# rm(h)
+# 
+# nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
+# nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
+# nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
+# 
+# crms = sort(nrc_dr_all$name)
+crms = recordDF$crm
 names(crms) = crms
 
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- ExtendedTask$new(function(analytes){
   future_promise({
-    data <- data.frame()
+    #data <- data.frame()
     if (length(analytes) > 0) {
       props <- c()
       data <- c()
