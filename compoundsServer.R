@@ -86,7 +86,10 @@ names(crms) = crms
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- ExtendedTask$new(function(analytes){
   future_promise({
-    #data <- data.frame()
+    #overrides the ssl verifypeer so the webpage can be reached on shinyapps
+    h <- curl::new_handle()
+    curl::handle_setopt(h, ssl_verifypeer = 0)
+    
     if (length(analytes) > 0) {
       props <- c()
       data <- c()
@@ -148,11 +151,7 @@ getTableData <- ExtendedTask$new(function(analytes){
                       gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
         ids <- ""
         
-        #overrides the ssl verifypeer so the webpage can be reached on shinyapps
-        h <- curl::new_handle()
-        curl::handle_setopt(h, ssl_verifypeer = 0)
         d = xml_children(read_xml(geturl(link, h)))
-        rm(h)
         req(d)
         
         df = xml_to_dataframe(d)[-1,-c(1,2)]
@@ -163,10 +162,7 @@ getTableData <- ExtendedTask$new(function(analytes){
           link <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=&q=',
                         searchIds, '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', sep="")
           
-          h <- curl::new_handle()
-          curl::handle_setopt(h, ssl_verifypeer = 0)
           d = xml_children(read_xml(geturl(link, h)))
-          rm(h)
           req(d)
           df = xml_to_dataframe(d)[-1,-c(1,2)]
         }
@@ -196,11 +192,8 @@ getTableData <- ExtendedTask$new(function(analytes){
             link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
             
             #use doi content to get information (title, abstract, table, doi)
-            #overrides the ssl verifypeer so the webpage can be reached
-            h <- curl::new_handle()
-            curl::handle_setopt(h, ssl_verifypeer = 0)
             ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-            rm(h)
+            
             #sets analyte table data to null, unless crm contains analyte table
             analyteTable <- NULL
             if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
@@ -346,12 +339,13 @@ getTableData <- ExtendedTask$new(function(analytes){
     }
     
     row.names(data) <- NULL
+    rm(h)
     return(data)
     
   }, seed = TRUE)
 })
 
-#the analytes shown in the select analye drop down menu
+#the analytes shown in the select analyte drop down menu
 analytes <- function() {
   link <- 'https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1'
   
