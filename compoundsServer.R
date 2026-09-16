@@ -86,6 +86,7 @@ names(crms) = crms
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- ExtendedTask$new(function(analytes){
   future_promise({
+    start_time <- Sys.time()
     #overrides the ssl verifypeer so the webpage can be reached on shinyapps
     h <- curl::new_handle()
     curl::handle_setopt(h, ssl_verifypeer = 0)
@@ -196,8 +197,10 @@ getTableData <- ExtendedTask$new(function(analytes){
             
             #sets analyte table data to null, unless crm contains analyte table
             analyteTable <- NULL
-            if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
-              analyteTable <- data.frame(ddf[[3]])
+            analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+            
+            if(length(analyte_idx) >= 1){
+              analyteTable <- data.frame(ddf[[analyte_idx[1]]])
             }
             
             #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
@@ -340,6 +343,9 @@ getTableData <- ExtendedTask$new(function(analytes){
     
     row.names(data) <- NULL
     rm(h)
+    end_time <- Sys.time()
+    elapsed_time <- end_time - start_time
+    print(elapsed_time)
     return(data)
     
   }, seed = TRUE)
@@ -707,11 +713,15 @@ observeEvent(input$addallSubstances, {
     curl::handle_setopt(h, ssl_verifypeer = 0)
     ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
     rm(h)
+    
     #sets analyte table data to null, unless crm contains analyte table
     analyteTable <- NULL
-    if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
-      analyteTable <- data.frame(ddf[[3]])
+    analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+    
+    if(length(analyte_idx) >= 1){
+      analyteTable <- data.frame(ddf[[analyte_idx[1]]])
     }
+    
     if (!is.null(analyteTable)){
       allNames <- append(analyteTable$Analyte, allNames)
     }
