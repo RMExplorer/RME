@@ -97,60 +97,34 @@ getTableData <- ExtendedTask$new(function(analytes){
       
       #for each analyte, get the pubchem info
       for (i in 1:length(analytes)){
-        compoundName <- ""
-        #if the search term is an inchikey
-        if (is.inchikey(analytes[[i]])){
-          props <- get_properties(
-            properties = c("smiles",
-                           "inchikey",
-                           "MolecularFormula", 
-                           "MolecularWeight", 
-                           "ExactMass", 
-                           "TPSA", 
-                           "XLogP"),
-            identifier = analytes[[i]],
-            namespace = "inchikey",
-            propertyMatch = list(
-              .ignore.case = TRUE,
-              type = "contain"
-            )
-          )
-          
-          synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
-                                retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)$CID,
-                                "/synonyms/JSON", sep="")
-          
-          compoundName <- tryCatch({
-            fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
-          }, error = function(e) {
-            return(analytes[[i]])
-          })
-          
-        } else {
-          #assumes that if the analyte isn't an inchikey, it is a name, and searches that in pubchem
-          props <- get_properties(
-            properties = c("smiles",
-                           "inchikey",
-                           "MolecularFormula", 
-                           "MolecularWeight", 
-                           "ExactMass", 
-                           "TPSA", 
-                           "XLogP"),
-            identifier = analytes[[i]],
-            namespace = "name",
-            propertyMatch = list(
-              .ignore.case = TRUE,
-              type = "contain"
-            )
-          )
-        }
-        #contains the info from PubChem
-        info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)
+        isInchikey <- is.inchikey(analytes[[i]]) # checks if search term is an inchikey
+        props <- get_properties(
+          properties = c("smiles",
+                         "inchikey",
+                         "MolecularFormula",
+                         "MolecularWeight",
+                         "ExactMass",
+                         "TPSA",
+                         "XLogP"),
+          identifier = analytes[[i]],
+          namespace = if (isInchikey) "inchikey" else "name",
+          propertyMatch = list(.ignore.case = TRUE, type = "contain")
+        )
+        info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE) # contains the info from pubchem
+        
+        synonymsLink <- paste0("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/",
+                              info$CID,
+                              "/synonyms/JSON")
+        
+        compoundName <- tryCatch({
+          fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
+        }, error = function(e) {
+          return(analytes[[i]])
+        })
         
         #will search the repository with the name/inchikey the analyte was searched with
         link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                       gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-        ids <- ""
         
         d = xml_children(read_xml(geturl(link, h)))
         req(d)
