@@ -67,7 +67,7 @@ output$spectrum <- renderPlotly({
       p <- ggplot(spectra, aes(x = `Mass`, y = `Intensity`)) +
         theme_classic()+
         stat_label_peaks(angle = 90, color ="black",
-                         ignore_threshold = 0.05,
+                         global.threshold = 0.05,
                          x.label.fmt = paste0("%.", decimalPlaces, "f", sep = "")) +
         geom_line(aes(text=map(paste('Mass to charge ratio: ', round(`Mass`, 3),
                                      '<br>Relative Intensity (%):',
@@ -173,7 +173,7 @@ output$spectrum <- renderPlotly({
         ggplot(aes(x = `Chemical Shift`, y = `Intensity`)) +
         theme_classic() +
         stat_label_peaks( angle = 90, color ="black", 
-                          ignore_threshold = 0.05, 
+                          global.threshold = 0.05, 
                           x.label.transform = abs, 
                           span = 9) +
         geom_line(aes(text=map(paste('Intensity:', 
