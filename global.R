@@ -27,6 +27,7 @@ for (node in pageNodes){
 }
 
 #add the html from all pages found for the OAI query into the records root node
+# initial request only fetches first 100 entries; resumption token used to fetch next set of records
 while (nchar(oaiXML %>% xml_find_all(xpath="//resumptionToken") %>% xml_text()) > 0) {
   token <- oaiXML %>% xml_find_all(xpath="//resumptionToken") %>% xml_text()
   h <- curl::new_handle()
