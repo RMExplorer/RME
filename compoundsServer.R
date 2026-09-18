@@ -92,6 +92,7 @@ getTableData <- ExtendedTask$new(function(analytes){
     curl::handle_setopt(h, ssl_verifypeer = 0)
     
     if (length(analytes) > 0) {
+      props <- c()
       data <- c()
       cache <- new.env(hash = TRUE, parent = emptyenv())
       #for each analyte, get the pubchem info
@@ -183,8 +184,8 @@ getTableData <- ExtendedTask$new(function(analytes){
             
             #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
             if (!is.null(analyteTable)) {
-              massFrac <- as.numeric(analyteTable$Value[(grepl(compoundName, analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
-              units <- analyteTable$Unit[(grepl(compoundName, analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)]
+              massFrac <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)])
+              units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass fraction", analyteTable$Quantity, ignore.case = TRUE)]
               #remove NAs
               units <- units[!is.na(massFrac)]
               massFrac <- massFrac[!is.na(massFrac)]
@@ -210,8 +211,8 @@ getTableData <- ExtendedTask$new(function(analytes){
                 maxMassFraction <- max(massFrac)
               }
               
-              massConc <- as.numeric(analyteTable$Value[(grepl(compoundName, analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
-              units <- analyteTable$Unit[(grepl(compoundName, analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
+              massConc <- as.numeric(analyteTable$Value[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)])
+              units <- analyteTable$Unit[(grepl(ifelse(nchar(compoundName) > 0, compoundName, analytes[[i]]), analyteTable$Analyte, ignore.case = TRUE)) & grepl("mass concentration", analyteTable$Quantity, ignore.case = TRUE)]
               #remove NAs
               units <- units[!is.na(massConc)]
               massConc <- massConc[!is.na(massConc)]
@@ -248,7 +249,7 @@ getTableData <- ExtendedTask$new(function(analytes){
         
         #create the datarow with all the pubchem info
         dataRow <- c(
-          compoundName, 
+          ifelse(length(compoundName) > 0 && nchar(compoundName) > 0, compoundName, analytes[[i]]), 
           ifelse(length(info[["CID"]]) != 0, info[["CID"]], NA), 
           ifelse(length(info[["MolecularFormula"]]) != 0, info[["MolecularFormula"]], NA), 
           ifelse(length(info[["MolecularWeight"]]) != 0, info[["MolecularWeight"]], NA), 
@@ -260,7 +261,8 @@ getTableData <- ExtendedTask$new(function(analytes){
           ifelse(length(crms) != 0, paste(crms, collapse = ","), NA),
           minMassFraction, maxMassFraction, minMassConc, maxMassConc
         )
-
+        
+        #ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA)
         #add the crm column to the table row
         data <- rbind(data, dataRow)
       }
