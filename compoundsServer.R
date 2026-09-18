@@ -92,7 +92,6 @@ getTableData <- ExtendedTask$new(function(analytes){
     curl::handle_setopt(h, ssl_verifypeer = 0)
     
     if (length(analytes) > 0) {
-      props <- c()
       data <- c()
       cache <- new.env(hash = TRUE, parent = emptyenv())
       #for each analyte, get the pubchem info
@@ -116,11 +115,14 @@ getTableData <- ExtendedTask$new(function(analytes){
                               info$CID,
                               "/synonyms/JSON")
         
-        compoundName <- tryCatch({
-          fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
-        }, error = function(e) {
-          return(analytes[[i]])
-        })
+        compoundName <- ""
+        if (isInchikey) {
+          compoundName <- tryCatch({
+            fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
+          }, error = function(e) {
+            return(analytes[[i]])
+          })
+        } 
         
         #will search the repository with the name/inchikey the analyte was searched with
         link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
@@ -262,7 +264,6 @@ getTableData <- ExtendedTask$new(function(analytes){
           minMassFraction, maxMassFraction, minMassConc, maxMassConc
         )
         
-        #ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA)
         #add the crm column to the table row
         data <- rbind(data, dataRow)
       }
