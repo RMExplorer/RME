@@ -94,7 +94,7 @@ getTableData <- ExtendedTask$new(function(analytes){
     if (length(analytes) > 0) {
       props <- c()
       data <- c()
-      
+      cache <- new.env(hash = TRUE, parent = emptyenv())
       #for each analyte, get the pubchem info
       for (i in 1:length(analytes)){
         isInchikey <- is.inchikey(analytes[[i]]) # checks if search term is an inchikey
@@ -145,7 +145,6 @@ getTableData <- ExtendedTask$new(function(analytes){
         df$name = sapply(str_split(df$title,":"), function(x) x[1])
         df = df[!is.na(df$title),]
         crms = sort(df$name)
-        titles = sort(df$title)
         names(crms) = crms
         
         #initializing the mass fraction and concentration of the compound 
@@ -158,23 +157,29 @@ getTableData <- ExtendedTask$new(function(analytes){
         for (crm in crms) {
           if(crm != "No results"){
             #find the min/max mass concentration and fraction
-            #search repository for id
-            recordRow <- recordDF[recordDF$crm %in% crm,]
-            id <- recordRow$id
-            req(id)
             
-            #use id to get a link to the digital repository entry
-            link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-            
-            #use doi content to get information (title, abstract, table, doi)
-            ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-            
-            #sets analyte table data to null, unless crm contains analyte table
+            # sets analyte table data to null, unless crm contains analyte table
             analyteTable <- NULL
-            analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
-            
-            if(length(analyte_idx) >= 1){
-              analyteTable <- data.frame(ddf[[analyte_idx[1]]])
+            if (exists(crm, envir = cache, inherits = FALSE)) { # check cache before searching digital repository
+              analyteTable <- cache[[crm]]
+            } else {
+              #search repository for id
+              recordRow <- recordDF[recordDF$crm %in% crm,]
+              id <- recordRow$id
+              req(id)
+              
+              #use id to get a link to the digital repository entry
+              link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
+              
+              #use doi content to get information (title, abstract, table, doi)
+              ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
+              
+              analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+              if(length(analyte_idx) >= 1){
+                analyteTable <- data.frame(ddf[[analyte_idx[1]]])
+              }
+              
+              cache[[crm]] <- analyteTable # store, even if null, so we don't retry a known miss
             }
             
             #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
