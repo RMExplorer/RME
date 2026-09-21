@@ -159,21 +159,22 @@ observeEvent(input$addCRM, {
   ids <- selected$ID
   namesToAdd <- c()
   
+  #overrides the ssl verifypeer so the webpage can be reached
+  h <- curl::new_handle()
+  curl::handle_setopt(h, ssl_verifypeer = 0)
   for (id in ids){
     link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
     
-    #overrides the ssl verifypeer so the webpage can be reached
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
     ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-    rm(h)
     req(ddf)
     
-    if(length(ddf) >= 3 & grepl('Analyte',paste(ddf[3]))){
-      analyteTable <- data.frame(ddf[[3]])
+    analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+    if(length(analyte_idx) >= 1){
+      analyteTable <- data.frame(ddf[[analyte_idx[1]]])
       namesToAdd <- append(analyteTable$Analyte, namesToAdd)
     }
   }
+  rm(h)
   
   namesToAdd <- unique(namesToAdd)
   namesToAdd <- namesToAdd[!namesToAdd %in% yourTableAnalytes()]
