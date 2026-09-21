@@ -11,75 +11,6 @@ xml_to_dataframe <- function(nodeset){
   return(tibble::as_tibble(result))
 }
 
-# #function that returns all the tables saved by a particular user
-# allTables <- function(username) {
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '"}', sep=""), fields = '{}'))
-# }
-# 
-# #function to get the specific table from mongodb, given someones username and the name of the table
-# specificTable <- function(username, tablename) {
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""), fields = '{}'))
-# }
-# 
-# #inserts a new table or updates (by deleting, then inserting) the table saved by a user
-# insertTable <- function(username, tableValues, tablename){
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   
-#   #check if the table already exists for the user & delete it if it does
-#   mongoUserCompounds$remove(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""))
-#   
-#   arrayString <- "["
-#   #convert the list of values into a quoted + comma seperated list
-#   for (i in 1:length(tableValues)){
-#     arrayString <- paste(arrayString, '"', tableValues[[i]], '",', sep="")
-#   }
-#   #remove the last comma added
-#   arrayString <- substr(arrayString, 1, nchar(arrayString)-1)
-#   #add the closing brace
-#   arrayString <- paste(arrayString, "]", sep="")
-#   
-#   #make the values into json string in order to insert it into the DB
-#   tableVals <- c(paste('{"username": "', username, '",',
-#                        '"table": ', arrayString, ",",
-#                        '"tablename": "', tablename, '"}', sep=""))
-#   
-#   #add it to mongodb
-#   mongoUserCompounds$insert(tableVals)
-# }
-
-# #overrides the ssl verifypeer so the webpage can be reached
-# h <- curl::new_handle()
-# curl::handle_setopt(h, ssl_verifypeer = 0)
-# tryCatch({
-#   d = xml_children(read_xml(geturl('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', h)))
-# },
-# error = function(cond) {
-#   message(conditionMessage(cond))
-#   output$urlerror <- renderText({
-#     "We are currently unable to access the nrc digital repository"
-#   })
-#   NA
-# },
-# warning = function(cond) {
-#   message(conditionMessage(cond))
-#   output$urlerror <- renderText({
-#     "We are currently unable to access the nrc digital repository"
-#   })
-#   NULL
-# })
-# 
-# rm(h)
-# 
-# nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
-# nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
-# nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
-# 
-# crms = sort(nrc_dr_all$name)
 crms = recordDF$crm
 names(crms) = crms
 
@@ -111,13 +42,12 @@ getTableData <- ExtendedTask$new(function(analytes){
         )
         info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE) # contains the info from pubchem
         
-        synonymsLink <- paste0("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/",
-                              info$CID,
-                              "/synonyms/JSON")
-        
         compoundName <- ""
         if (isInchikey) {
           compoundName <- tryCatch({
+            synonymsLink <- paste0("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/",
+                                   info$CID,
+                                   "/synonyms/JSON")
             fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
           }, error = function(e) {
             return(analytes[[i]])
