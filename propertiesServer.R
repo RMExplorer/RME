@@ -303,7 +303,7 @@ output$analyteTable <- renderDT({
     dd_1 = data.frame(ddf[1])
     v$doi = dd_1[dd_1[,'X1']=='DOI',2]
     v$abstract = dd_1[dd_1[,'X1']=='Abstract',2]
-    v$date = dd_1[dd_1[,'X1']=='Publication date',2]
+    v$date = dd_1[dd_1[,'X1']=='Date published',2]
   }
   
   d = ddf[length(ddf)]
