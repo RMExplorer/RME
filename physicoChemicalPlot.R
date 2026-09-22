@@ -26,11 +26,20 @@ output$plotFilters <- renderUI({
   )
 })
 
+# text shown when no analytes are selected
+output$plotNothingSelected <- renderUI({
+  req(length(input$customTable_rows_selected) == 0)
+  HTML(paste(
+    "<p>Make sure you have selected at least <strong>one</strong> option from the table in the 'General Search' tab.</p>"
+  ))
+})
+
 #the data after all the filtering
 filteredData <- reactive({
   req(length(getTableData$result()) > 0)
   result <- getTableData$result()
   req(input$all)
+  req(length(input$customTable_rows_selected) != 0)
   s <- input$customTable_rows_selected
   
   if(input$all == "FALSE") {
