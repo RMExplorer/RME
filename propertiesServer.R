@@ -172,7 +172,6 @@ output$similarCompounds <- renderUI({
     keep <- !is.na(firstSyn)
     results <- unname(firstSyn[keep])
     disable <- as.integer(inchikeys[hits][keep] %in% tableData$InchiKey)
-    print(disable)
   }
 
   list(
