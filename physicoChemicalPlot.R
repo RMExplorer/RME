@@ -1,6 +1,6 @@
 #allows filtering of plot data
 output$plotFilters <- renderUI({
-  req(length(getTableData$result()) > 0)
+  req(nrow(getTableData$result()) > 0)
   result <- getTableData$result()
   list(
     tags$div(tags$div(selectInput("pkLevel", 
@@ -26,23 +26,34 @@ output$plotFilters <- renderUI({
   )
 })
 
-# text shown when no analytes are selected
+#text shown when there are no analytes in the table, or "Only Selected Analytes" 
+#is chosen but no rows are selected
 output$plotNothingSelected <- renderUI({
-  req(length(input$customTable_rows_selected) == 0)
-  HTML(paste(
-    "<p>Make sure you have selected at least <strong>one</strong> option from the table in the 'General Search' tab.</p>"
-  ))
+  noAnalytes <- nrow(getTableData$result()) == 0
+  onlySelectedEmpty <- !is.null(input$all) && input$all == "FALSE" && 
+    length(input$customTable_rows_selected) == 0
+  req(noAnalytes || onlySelectedEmpty)
+  
+  if (noAnalytes) {
+    HTML(paste(
+      "<p>Make sure you have added <strong>at least one</strong> analyte to the table in the 'General Search' tab.</p>"
+    ))
+  } else {
+    HTML(paste(
+      "<p>Make sure you have selected at least <strong>one</strong> option from the table in the 'General Search' tab.</p>"
+    ))
+  }
 })
 
 #the data after all the filtering
 filteredData <- reactive({
-  req(length(getTableData$result()) > 0)
+  req(nrow(getTableData$result()) > 0)
   result <- getTableData$result()
   req(input$all)
-  req(length(input$customTable_rows_selected) != 0)
   s <- input$customTable_rows_selected
   
   if(input$all == "FALSE") {
+    req(length(s) > 0)
     data <- result  %>% slice(s)
   } else {
     data <- result
@@ -51,7 +62,7 @@ filteredData <- reactive({
   #remove data points where pkow or mw is NA
   data <- data[!is.na(data$pKow),]
   data <- data[!is.na(data$"Molecular Weight"),]
-
+  
   if (length(input$pkLevel) == 0 || input$pkLevel == "None"){
     data <- data
   } else if (input$pkLevel == "Low") {
