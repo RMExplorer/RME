@@ -29,7 +29,7 @@ output$plotFilters <- renderUI({
 #text shown when there are no analytes in the table, or "Only Selected Analytes" 
 #is chosen but no rows are selected
 output$plotNothingSelected <- renderUI({
-  noAnalytes <- nrow(getTableData$result()) == 0
+  noAnalytes <- is.function(getTableData$result())
   onlySelectedEmpty <- !is.null(input$all) && input$all == "FALSE" && 
     length(input$customTable_rows_selected) == 0
   req(noAnalytes || onlySelectedEmpty)
@@ -47,7 +47,7 @@ output$plotNothingSelected <- renderUI({
 
 #the data after all the filtering
 filteredData <- reactive({
-  req(nrow(getTableData$result()) > 0)
+  req(!is.function(getTableData$result()))
   result <- getTableData$result()
   req(input$all)
   s <- input$customTable_rows_selected
