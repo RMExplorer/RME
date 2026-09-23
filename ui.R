@@ -104,6 +104,8 @@ ui <- navbarPage(
                  tooltip_ui("physico_chemical_instructions", 
                             "Shows all the substamces in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
                  style="display:flex;align-items:center;justify-content:center;"),
+             div(uiOutput("plotNothingSelected"),                               #in physicoChemicalPlot.R (loaded in server.R)
+                 style="display:flex;justify-content:center;font-size:2rem;"),
              div(plotlyOutput("plot", height = "70vh", width="85vw"),           #in physicoChemicalPlot.R (loaded in server.R)
                  style="display:flex;justify-content:center;"),          
              div(uiOutput("plotFilters"),                                       #in physicoChemicalPlot.R (loaded in server.R)

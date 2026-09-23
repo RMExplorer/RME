@@ -11,75 +11,6 @@ xml_to_dataframe <- function(nodeset){
   return(tibble::as_tibble(result))
 }
 
-# #function that returns all the tables saved by a particular user
-# allTables <- function(username) {
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '"}', sep=""), fields = '{}'))
-# }
-# 
-# #function to get the specific table from mongodb, given someones username and the name of the table
-# specificTable <- function(username, tablename) {
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   return(mongoUserCompounds$find(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""), fields = '{}'))
-# }
-# 
-# #inserts a new table or updates (by deleting, then inserting) the table saved by a user
-# insertTable <- function(username, tableValues, tablename){
-#   mongoUserCompounds <- mongo(collection="userCompounds", db="rmeDB", url= connectionLink)
-#   req(mongoUserCompounds)
-#   
-#   #check if the table already exists for the user & delete it if it does
-#   mongoUserCompounds$remove(query = paste('{"username" : "', username, '", "tablename" : "', tablename, '"}', sep=""))
-#   
-#   arrayString <- "["
-#   #convert the list of values into a quoted + comma seperated list
-#   for (i in 1:length(tableValues)){
-#     arrayString <- paste(arrayString, '"', tableValues[[i]], '",', sep="")
-#   }
-#   #remove the last comma added
-#   arrayString <- substr(arrayString, 1, nchar(arrayString)-1)
-#   #add the closing brace
-#   arrayString <- paste(arrayString, "]", sep="")
-#   
-#   #make the values into json string in order to insert it into the DB
-#   tableVals <- c(paste('{"username": "', username, '",',
-#                        '"table": ', arrayString, ",",
-#                        '"tablename": "', tablename, '"}', sep=""))
-#   
-#   #add it to mongodb
-#   mongoUserCompounds$insert(tableVals)
-# }
-
-# #overrides the ssl verifypeer so the webpage can be reached
-# h <- curl::new_handle()
-# curl::handle_setopt(h, ssl_verifypeer = 0)
-# tryCatch({
-#   d = xml_children(read_xml(geturl('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', h)))
-# },
-# error = function(cond) {
-#   message(conditionMessage(cond))
-#   output$urlerror <- renderText({
-#     "We are currently unable to access the nrc digital repository"
-#   })
-#   NA
-# },
-# warning = function(cond) {
-#   message(conditionMessage(cond))
-#   output$urlerror <- renderText({
-#     "We are currently unable to access the nrc digital repository"
-#   })
-#   NULL
-# })
-# 
-# rm(h)
-# 
-# nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
-# nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
-# nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
-# 
-# crms = sort(nrc_dr_all$name)
 crms = recordDF$crm
 names(crms) = crms
 
@@ -92,86 +23,56 @@ getTableData <- ExtendedTask$new(function(analytes){
     curl::handle_setopt(h, ssl_verifypeer = 0)
     
     if (length(analytes) > 0) {
-      props <- c()
       data <- c()
-      
+      cache <- new.env(hash = TRUE, parent = emptyenv())
       #for each analyte, get the pubchem info
       for (i in 1:length(analytes)){
+        isInchikey <- is.inchikey(analytes[[i]]) # checks if search term is an inchikey
+        props <- get_properties(
+          properties = c("smiles",
+                         "inchikey",
+                         "MolecularFormula",
+                         "MolecularWeight",
+                         "ExactMass",
+                         "TPSA",
+                         "XLogP"),
+          identifier = analytes[[i]],
+          namespace = if (isInchikey) "inchikey" else "name",
+          propertyMatch = list(.ignore.case = TRUE, type = "contain")
+        )
+        info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE) # contains the info from pubchem
+        
         compoundName <- ""
-        #if the search term is an inchikey
-        if (is.inchikey(analytes[[i]])){
-          props <- get_properties(
-            properties = c("smiles",
-                           "inchikey",
-                           "MolecularFormula", 
-                           "MolecularWeight", 
-                           "ExactMass", 
-                           "TPSA", 
-                           "XLogP"),
-            identifier = analytes[[i]],
-            namespace = "inchikey",
-            propertyMatch = list(
-              .ignore.case = TRUE,
-              type = "contain"
-            )
-          )
-          
-          synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
-                                retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)$CID,
-                                "/synonyms/JSON", sep="")
-          
+        if (isInchikey) {
           compoundName <- tryCatch({
+            synonymsLink <- paste0("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/",
+                                   info$CID,
+                                   "/synonyms/JSON")
             fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
           }, error = function(e) {
             return(analytes[[i]])
           })
-          
-        } else {
-          #assumes that if the analyte isn't an inchikey, it is a name, and searches that in pubchem
-          props <- get_properties(
-            properties = c("smiles",
-                           "inchikey",
-                           "MolecularFormula", 
-                           "MolecularWeight", 
-                           "ExactMass", 
-                           "TPSA", 
-                           "XLogP"),
-            identifier = analytes[[i]],
-            namespace = "name",
-            propertyMatch = list(
-              .ignore.case = TRUE,
-              type = "contain"
-            )
-          )
         }
-        #contains the info from PubChem
-        info <- retrieve(object = props, .which = analytes[[i]], .to.data.frame = TRUE)
         
-        #will search the repository with the name/inchikey the analyte was searched with
-        link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                      gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-        ids <- ""
+        if (length(info[["InChIKey"]]) > 0) {
+          # search by name + inchikey for max coverage
+          link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                        gsub(' ','+', analytes[[i]]), '+OR+', 
+                        gsub("/", "%2F", gsub(" ", "+", info[["InChIKey"]])), 
+                        '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+        } else {
+          # search only by name if inchikey does not exist
+          link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                        gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+        }
         
         d = xml_children(read_xml(geturl(link, h)))
         req(d)
-        
         df = xml_to_dataframe(d)[-1,-c(1,2)]
-        #if the previous search in the repository for the inchikey stored in yourtableanalytes did not work, search with the value in the inchikey column
-        if (df$title[1] == "No results" && (length(info[["InChIKey"]]) > 0)) {
-          searchIds <- gsub(" ", "+", info[["InChIKey"]])
-          searchIds <- gsub("/", "%2F", searchIds)
-          link <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=&q=',
-                        searchIds, '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', sep="")
-          
-          d = xml_children(read_xml(geturl(link, h)))
-          req(d)
-          df = xml_to_dataframe(d)[-1,-c(1,2)]
-        }
         
         df$name = sapply(str_split(df$title,":"), function(x) x[1])
         df = df[!is.na(df$title),]
         crms = sort(df$name)
-        titles = sort(df$title)
         names(crms) = crms
         
         #initializing the mass fraction and concentration of the compound 
@@ -184,23 +85,29 @@ getTableData <- ExtendedTask$new(function(analytes){
         for (crm in crms) {
           if(crm != "No results"){
             #find the min/max mass concentration and fraction
-            #search repository for id
-            recordRow <- recordDF[recordDF$crm %in% crm,]
-            id <- recordRow$id
-            req(id)
             
-            #use id to get a link to the digital repository entry
-            link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-            
-            #use doi content to get information (title, abstract, table, doi)
-            ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-            
-            #sets analyte table data to null, unless crm contains analyte table
+            # sets analyte table data to null, unless crm contains analyte table
             analyteTable <- NULL
-            analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
-            
-            if(length(analyte_idx) >= 1){
-              analyteTable <- data.frame(ddf[[analyte_idx[1]]])
+            if (exists(crm, envir = cache, inherits = FALSE)) { # check cache before searching digital repository
+              analyteTable <- cache[[crm]]
+            } else {
+              #search repository for id
+              recordRow <- recordDF[recordDF$crm %in% crm,]
+              id <- recordRow$id
+              req(id)
+              
+              #use id to get a link to the digital repository entry
+              link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
+              
+              #use doi content to get information (title, abstract, table, doi)
+              ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
+              
+              analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
+              if(length(analyte_idx) >= 1){
+                analyteTable <- data.frame(ddf[[analyte_idx[1]]])
+              }
+              
+              cache[[crm]] <- analyteTable # store, even if null, so we don't retry a known miss
             }
             
             #read into the analyte table as long as it's not empty and the compound has a molecular weight available from Pubchem
@@ -283,7 +190,6 @@ getTableData <- ExtendedTask$new(function(analytes){
           minMassFraction, maxMassFraction, minMassConc, maxMassConc
         )
         
-        #ifelse(length(crms) != 0, paste(crmHTML, collapse=", "), NA)
         #add the crm column to the table row
         data <- rbind(data, dataRow)
       }

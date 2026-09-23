@@ -117,54 +117,62 @@ output$similarCompounds <- renderUI({
   req(data$CID)
   
   #finds all the similar compounds cids (converted to inchikey)
-  similarCIDsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/cid/", data$CID,"/cids/JSON", sep="")
-  similarCIDs <- fromJSON(similarCIDsLink)$IdentifierList$CID[c(1:100)]
-  #making sure there is a maximum of 100 CIDs in order to not get error
-  similarCIDs <- paste(similarCIDs[!is.na(similarCIDs)], collapse = ",")
-  inchikeys <- fromJSON(paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
-                              similarCIDs, 
-                              "/property/InChIKey/JSON", sep=""))$PropertyTable$Properties$InChIKey
+  similarCIDsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/cid/", data$CID,"/cids/JSON?MaxRecords=100", sep="")
+  similarCIDs <- fromJSON(similarCIDsLink)$IdentifierList$CID %>% 
+    setdiff(data$CID) %>%
+    na.omit() %>%
+    paste(collapse = ",")
+  props <- fromJSON(paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
+                          similarCIDs, 
+                          "/property/InChIKey/JSON", sep=""))$PropertyTable$Properties
+  inchikeys <- props$InChIKey
+  cids <- props$CID  # kept alongside the inchikeys so synonyms can be matched back later
+  
   #searches the dr for the inchikeys to see if we have them in our repository
   searchIds <- gsub("/", "%2F", inchikeys)
   inchilink <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=&q=',
                 searchIds, '+&q=&y1=&y2=&ps=10&s=sc&av=1', sep="")
-  results <- c()
-  disable <- c()
+  hits <- c()  # positions of the similar compounds that exist in the repository
+  h <- curl::new_handle()
+  curl::handle_setopt(h, ssl_verifypeer = 0)
   #using the inchikey, search the repository, if it exists, add the 1st synonym (name) for the compound to the similar compound dropdown
   for (i in 1:length(inchilink)) {
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
     d = read_html(geturl(inchilink[[i]], h)) %>% xml_find_all(xpath="//id") %>% xml_text()
     #if the record has an id (meaning an entry exists in the repository), then add the name (1st synonym from pubchem) to the dropdown list 
     #(+ ignore if the inchikey is the same as the current selection)
     if (any(grepl("urn:uuid:", d)) && inchikeys[[i]] != data$InchiKey){
-      synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/inchikey/", 
-                            inchikeys[[i]],"/synonyms/JSON", sep="")
-      synonyms <- tryCatch({
-        fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]][1]
-      }, error = function(e) {
-          return(NA)
-      })
-      
-      if (length(synonyms) > 0 && !is.na(synonyms)){results <- c(results, synonyms)}
-      
-      req(length(getTableData$result()) > 0)
-      tableData <- getTableData$result()
-      
-      if (inchikeys[[i]] %in% tableData$InchiKey){
-        disable <- c(disable, 1)
-      } else {
-        disable <- c(disable, 0)
-      }
-      
+      hits <- c(hits, i)
     }
-    rm(h)
   }
+  rm(h)
   
-  #remove inchikey of the current page if its in the list
-  results <- unique(results[results != data$InchiKey])
-  #remove any NAs
-  results <- results[!is.na(results)]
+  results <- c()
+  disable <- c()
+  if (length(hits) > 0) {
+    # one pubchem request for the synonyms of every hit
+    synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", 
+                          paste(cids[hits], collapse = ","), "/synonyms/JSON", sep="")
+    synInfo <- tryCatch({
+      fromJSON(synonymsLink)$InformationList$Information
+    }, error = function(e) {
+      return(NULL)
+    })
+    
+    # 1st synonym (name) for each hit, matched by CID (NA if pubchem returned none)
+    firstSyn <- vapply(cids[hits], function(cid) {
+      idx <- if (is.null(synInfo)) NA_integer_ else match(cid, synInfo$CID)
+      syn <- if (is.na(idx) || is.null(synInfo$Synonym)) NULL else synInfo$Synonym[[idx]]
+      if (length(syn) == 0) NA_character_ else syn[1]
+    }, character(1))
+    
+    req(length(getTableData$result()) > 0)
+    tableData <- getTableData$result()
+    
+    # drop hits without a name; results and disable are filtered together so they stay aligned
+    keep <- !is.na(firstSyn)
+    results <- unname(firstSyn[keep])
+    disable <- as.integer(inchikeys[hits][keep] %in% tableData$InchiKey)
+  }
 
   list(
     div(pickerInput(inputId = "similarCompound", label = div(strong("Similar Compounds"), 
