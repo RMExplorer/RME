@@ -17,7 +17,6 @@ names(crms) = crms
 #function that takes the name of a analyte and runs it through PubChem to gather information and return a dataframe
 getTableData <- ExtendedTask$new(function(analytes){
   future_promise({
-    start_time <- Sys.time()
     #overrides the ssl verifypeer so the webpage can be reached on shinyapps
     h <- curl::new_handle()
     curl::handle_setopt(h, ssl_verifypeer = 0)
@@ -249,9 +248,6 @@ getTableData <- ExtendedTask$new(function(analytes){
     
     row.names(data) <- NULL
     rm(h)
-    end_time <- Sys.time()
-    elapsed_time <- end_time - start_time
-    print(elapsed_time)
     return(data)
     
   }, seed = TRUE)
