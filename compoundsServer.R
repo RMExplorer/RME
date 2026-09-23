@@ -52,27 +52,23 @@ getTableData <- ExtendedTask$new(function(analytes){
           }, error = function(e) {
             return(analytes[[i]])
           })
-        } 
+        }
         
-        #will search the repository with the name/inchikey the analyte was searched with
-        link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                      gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+        if (length(info[["InChIKey"]]) > 0) {
+          # search by name + inchikey for max coverage
+          link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                        gsub(' ','+', analytes[[i]]), '+OR+', 
+                        gsub("/", "%2F", gsub(" ", "+", info[["InChIKey"]])), 
+                        '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+        } else {
+          # search only by name if inchikey does not exist
+          link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                        gsub(' ','+', analytes[[i]]), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+        }
         
         d = xml_children(read_xml(geturl(link, h)))
         req(d)
-        
         df = xml_to_dataframe(d)[-1,-c(1,2)]
-        #if the previous search in the repository for the inchikey stored in yourtableanalytes did not work, search with the value in the inchikey column
-        if (df$title[1] == "No results" && (length(info[["InChIKey"]]) > 0)) {
-          searchIds <- gsub(" ", "+", info[["InChIKey"]])
-          searchIds <- gsub("/", "%2F", searchIds)
-          link <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=&q=',
-                        searchIds, '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', sep="")
-          
-          d = xml_children(read_xml(geturl(link, h)))
-          req(d)
-          df = xml_to_dataframe(d)[-1,-c(1,2)]
-        }
         
         df$name = sapply(str_split(df$title,":"), function(x) x[1])
         df = df[!is.na(df$title),]
