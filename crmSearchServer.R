@@ -34,7 +34,8 @@ getCRMData <- function(crm){
       "<a href=\"#\" class=\"view-info\" data-name=", name,">", name, "</a>",sep="")))
   }
   
-  data <- data.frame("ID" = ids, "Name" = nameHTML, "Affiliates" = data$affiliation, "Format" = formats, "Material Type" = data$materialType)
+  data <- data.frame("ID" = ids, "CRM" = data$crm, "Name" = nameHTML, 
+                     "Affiliates" = data$affiliation, "Format" = formats, "Material Type" = data$materialType)
   shinyjs::show("crmTable")
   return(data)
 }
@@ -121,9 +122,9 @@ observeEvent(input$selectedMaterial, {
 observeEvent(input$removeCRM, {
   req(input$crmTable_rows_selected)
   selected <- crmTableData() %>% slice(input$crmTable_rows_selected)
-  names <- selected$Name
+  names <- selected$CRM
   
-  newList <- yourTableAnalytes()
+  newList <- crmList()
   newList <- newList[!newList %in% names]
   crmList(newList)
 })
@@ -137,7 +138,7 @@ observeEvent(input$removeAllCRM, {
 output$crmTable <- renderDT({
   req(length(crmTableData()) > 0)
   data <- crmTableData()
-  colnames(data) <- c("id", "Name", "Affiliates", "Format", "Material Type")
+  colnames(data) <- c("id", "CRM", "Name", "Affiliates", "Format", "Material Type")
   datatable(data[, c("Name", "Affiliates", "Format", "Material Type")], escape = FALSE,
             filter= list(position='top', clear = FALSE))
 })
