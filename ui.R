@@ -116,6 +116,12 @@ ui <- navbarPage(
              br(), br(), br()
            )
   ),
+  tabPanel("About",
+    fluidPage(
+      theme = bs_theme(version = 5, bootswatch = "sandstone"),
+      uiOutput("about")                                                         #in about.R (loaded in server.R)
+    )
+  ),
   tabPanel("Spectral Data",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
