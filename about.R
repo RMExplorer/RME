@@ -24,12 +24,10 @@ output$about <- renderUI({
       card(
         style = "padding: 1.5rem; margin-bottom: 2rem;",
         h4("What is the RM Explorer?", style = "font-weight: bold;"),
-        p("The Reference Material Explorer is a tool built on the NRC Digital Repository's
-           external APIs that lets users visualize, search, and analyze information about
-           the Certified Reference Materials (CRMs) produced by the National Research Council
-           of Canada. It brings together compound properties, spectral data, and certificate
-           information in one place, making it easier to explore the substances behind each
-           reference material.", style = "font-size: 1rem; line-height: 1.6;")
+        p("The Reference Material Explorer is an application built upon the NRC Digital Repository external Application Programming Interfaces (APIs) 
+         that allows users to visualise, analyse and display useful information about the Reference Materials produced by the National 
+         Research Council of Canada. This application relies upon and complies with FAIR data principles and showcases multiple uses of 
+         machine-readable information in digital CRM certificates.", style = "font-size: 1rem; line-height: 1.6;")
       ),
       
       card(
