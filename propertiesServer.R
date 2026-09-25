@@ -2,7 +2,7 @@
 output$propertiesNothingSelected <- renderUI({
   req(length(input$customTable_rows_selected) != 1)
   HTML(paste(
-    "<p>Make sure you have selected a <strong>single</strong> option from the table in the 'General Search' tab.</p>"
+    "<p>Select <strong>one</strong> option from the table in the 'General Search' tab to view it's properties.</p>"
   ))
 })
 
@@ -24,6 +24,7 @@ output$molecule <- renderPlot({
   mol <- parse.smiles(smil)[[1]]
   req(mol)
   
+  par(mar = c(0,0,0,0))
   depictor <- get.depictor(
     width = 800,
     height = 800,
@@ -215,29 +216,40 @@ output$information <- renderUI({
     synonyms <- synonyms[!is.na(synonyms)]
   }
     
-  HTML(paste(
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Synonyms", 
-    tooltip(bsicons::bs_icon("info-circle", title = " "), "Top synonyms for this compound from PubChem"), "</strong></p><p>", 
-    paste(ifelse(any(is.na(synonyms)), "No Results", paste(synonyms, collapse=", "))), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Molecular Formula</strong></p><p>", 
-    paste(ifelse(is.na(data$"Molecular Formula"), "No Results", data$"Molecular Formula")), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Molecular Weight</strong></p><p>", 
-    paste(ifelse(is.na(data$"Molecular Weight"), "No Results", data$"Molecular Weight")), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Smiles</strong></p><p>", 
-    paste(ifelse(is.na(data$"Isomeric Smiles"), "No Results", data$"Isomeric Smiles")), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>InchiKey</strong></p><p>", 
-    paste(ifelse(is.na(data$InchiKey),  "No Results", data$InchiKey)), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Exact Mass", 
-    tooltip(bsicons::bs_icon("info-circle", title = " "), "Based on the most abundant isotope of each individual element."), "</strong></p><p>", 
-    paste(ifelse(is.na(data$"Exact Mass"), "No Results", paste(round(as.numeric(data$"Exact Mass"), 5), "Da"))), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>Topological Polar Surface Area</strong></p><p>", 
-    paste(ifelse(!is.na(data$TPSA) && data$TPSA != 0, paste(data$TPSA, "Å²"), "No Results")), "</p></div>",
-    "<div style='padding:10px 0px 10px 0px;'><p><strong>pKow</strong></p><p>", 
-    paste(ifelse(is.na(data$pKow), "No Results", data$pKow)), "</p></div>",
-    ifelse(!is.na(data$CID), paste("<div style='padding:10px 0px 10px 0px;'><p><strong>Pubchem</strong></p><a href=\"", 
-    paste("https://pubchem.ncbi.nlm.nih.gov/compound/", data$CID, sep=""),"\" target=\"new\">", 
-    paste("https://pubchem.ncbi.nlm.nih.gov/compound/", data$CID, sep=""),"</a></div>"), ""),
-    sep = ""))
+  #single labeled field in the info grid, with an optional tooltip icon next to the label
+  field <- function(label, value, tooltip_text = NULL, full_width = FALSE) {
+    div(
+      style = if (full_width) "grid-column: 1 / -1;" else NULL,
+      p(
+        strong(label),
+        if (!is.null(tooltip_text)) tooltip(bsicons::bs_icon("info-circle", title = " "), tooltip_text),
+        style = "margin-bottom: 2px; font-size: 0.8rem; color:#6c757d; text-transform:uppercase; letter-spacing:0.02em;"
+      ),
+      p(value, style = "margin-bottom: 0; word-break: break-word;")
+    )
+  }
+  
+  tagList(
+    div(
+      style = "display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem 1.5rem; padding: 0.5rem 0 1rem 0;",
+      field("Synonyms", ifelse(any(is.na(synonyms)), "No Results", paste(synonyms, collapse=", ")),
+            "Top synonyms for this compound from PubChem", full_width = TRUE),
+      field("Molecular Formula", ifelse(is.na(data$"Molecular Formula"), "No Results", data$"Molecular Formula")),
+      field("Molecular Weight", ifelse(is.na(data$"Molecular Weight"), "No Results", data$"Molecular Weight")),
+      field("InchiKey", ifelse(is.na(data$InchiKey), "No Results", data$InchiKey)),
+      field("Exact Mass", ifelse(is.na(data$"Exact Mass"), "No Results", paste(round(as.numeric(data$"Exact Mass"), 5), "Da")),
+            "Based on the most abundant isotope of each individual element."),
+      field("Topological Polar Surface Area", ifelse(!is.na(data$TPSA) && data$TPSA != 0, paste(data$TPSA, "Å²"), "No Results")),
+      field("pKow", ifelse(is.na(data$pKow), "No Results", data$pKow)),
+      field("Smiles", ifelse(is.na(data$"Isomeric Smiles"), "No Results", data$"Isomeric Smiles"), full_width = TRUE)
+    ),
+    if (!is.na(data$CID)) div(
+      style = "padding-top: 0.5rem;",
+      strong("PubChem: "),
+      a(href = paste0("https://pubchem.ncbi.nlm.nih.gov/compound/", data$CID),
+        paste0("https://pubchem.ncbi.nlm.nih.gov/compound/", data$CID), target = "new")
+    )
+  )
 })
 
 #outputs the doi link
