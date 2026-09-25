@@ -182,8 +182,8 @@ output$similarCompounds <- renderUI({
     div(pickerInput(inputId = "similarCompound", label = div(strong("Similar Compounds"), 
                                              tooltip_ui("similarcompoundtooltip", 
                                                         "Shows names of compounds that are similar in our repository. 
-                                                        Pick an option to add to the compounds table. 
-                                                        Options already in the compounds table will not be selectable."),
+                                                        Pick an option to add to the compound table. 
+                                                        Options already in the compound table will not be selectable."),
                                              style="display:flex;"), 
                       choices = results, 
                     choicesOpt = list(disabled = disable),

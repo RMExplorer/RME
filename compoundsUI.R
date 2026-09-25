@@ -8,7 +8,7 @@ output$RMESearch <- renderUI({
           checkboxInput("additiveTable", 
                         label ="Add to the Table", TRUE, width = "fit-content"),
             tooltip_ui("checkboxTooltip", 
-                       "Un-select this if you want to remove all entries in the table before adding a new substance."),
+                       "Un-select this if you want to remove all entries in the table before adding a new compound."),
             style="display:flex;"),
         style = "display:flex;gap:10px;align-items: flex-end;"
       ),
@@ -20,23 +20,23 @@ output$RMESearch <- renderUI({
         actionButton("removeAllAnalytes", 
                      "Remove All Rows From Your Table", 
                      class="btn-outline-danger"),
-        actionButton("addallSubstances", div("Add All Substances to the table", tooltip_ui("substanceaddTooltip", 
-                                                                                        "May take up to 3+ minutes. Not all substances from the NRC repository will be added due to search limitations."),
+        actionButton("addallSubstances", div("Add All Compounds to the table", tooltip_ui("substanceaddTooltip", 
+                                                                                        "May take up to 3+ minutes. Not all compounds from the NRC repository will be added due to search limitations."),
                                    style="display:flex;"), 
                      class="btn-outline-success"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
       div(
-        input_task_button("saveAnalytes", "Save Table Substances", 
+        input_task_button("saveAnalytes", "Save Table Compounds", 
                           class="btn-outline-success"
         ),
-        input_task_button("loadAnalytes", "Load Saved Substances", 
+        input_task_button("loadAnalytes", "Load Saved Compounds", 
                           class="btn-outline-info"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
-      p("Instructions: Add substances to the table below using the search dropdown above. 
+      p("Instructions: Add compounds to the table below using the search dropdown above. 
         The table is linked to the `Properties`, `pKow-MW Plot`, and `Spectral Data` tab. 
         Select one row from the table in order to see its properties in the `Properties` tab, 
         or its spectral data in the `Spectral Data` tab. Reference Materials that appear in all rows are highlighted in red."),
@@ -45,7 +45,7 @@ output$RMESearch <- renderUI({
         tags$div(img(src='loading.gif', style = "height: 4rem;"), 
                  style="display:flex;justify-content:center;")),
       DTOutput("customTable"),
-      style = "padding:20px 0px 20px 0px; overflow-x: auto; max-width: 100%;"
+      style = "padding:20px 0px 20px 0px; max-width: 100%;"
     )
   )
 })

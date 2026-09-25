@@ -514,7 +514,7 @@ observeEvent(input$saveAnalytes, {
 #saves the choosen in mongodb
 output$downloadSavedSubstances <- downloadHandler(
   filename = function() {
-    paste("yourSubstances.csv")
+    paste("yourCompounds.csv")
   },
   content = function(file) {
     write.csv(getTableData$result()$Name, file, row.names = FALSE)
