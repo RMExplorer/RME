@@ -187,9 +187,9 @@ output$similarCompounds <- renderUI({
                                              style="display:flex;"), 
                       choices = results, 
                     choicesOpt = list(disabled = disable),
-                      width="400px"),
-    actionButton("addSimilar", "Add Compound", class="btn-info", style="height:fit-content;margin-top:15px;"), 
-    style = "display:flex;gap:10px;align-items:center;"
+                      width="100%"),
+    actionButton("addSimilar", "Add Compound", class="btn-info", style="height:fit-content;"), 
+    style = "display:flex;gap:10px;align-items:center;flex-wrap:wrap;"
     )
   )
 })
