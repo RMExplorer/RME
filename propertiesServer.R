@@ -11,7 +11,7 @@ output$selectCRMdropdown = renderUI({
   req(length(input$customTable_rows_selected) == 1)
   req(v$crms != "No results")
   pickerInput(inputId = "selectedCRM", strong("Select a CRM for the analyte of interest from the dropdown below"), 
-              choices = v$crms)
+              choices = v$crms, width = "100%")
 })
 
 #for the sketch of the molecule in the Properties tab
