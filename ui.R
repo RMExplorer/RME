@@ -23,10 +23,6 @@ ui <- navbarPage(
           .navbar {
               padding: 0px;
           }
-          .sidebar-title {
-            padding: 0.25rem 1rem !important;
-            margin-bottom: 0 !important;
-          }
           body {
             padding-top: 70px;
           }
