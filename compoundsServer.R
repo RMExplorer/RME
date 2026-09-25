@@ -586,7 +586,7 @@ output$customTable <- renderDT({
   }
   
   datatable(data, 
-            options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE), 
+            options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'), 
             filter= list(position='top', clear = FALSE), escape = FALSE)
 })
 

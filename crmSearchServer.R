@@ -140,7 +140,7 @@ output$crmTable <- renderDT({
   data <- crmTableData()
   colnames(data) <- c("id", "CRM", "Name", "Affiliates", "Format", "Material Type")
   datatable(data[, c("Name", "Affiliates", "Format", "Material Type")], 
-            options = list(scrollX = TRUE, autoWidth = TRUE),
+            options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'),
             escape = FALSE,
             filter= list(position='top', clear = FALSE))
 })
