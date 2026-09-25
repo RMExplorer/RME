@@ -2,7 +2,7 @@
 output$propertiesNothingSelected <- renderUI({
   req(length(input$customTable_rows_selected) != 1)
   HTML(paste(
-    "<p>Select <strong>one</strong> option from the table in the 'General Search' tab to view it's properties.</p>"
+    "<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab to view it's properties.</p>"
   ))
 })
 
@@ -96,7 +96,7 @@ output$hasSpectrum <- renderUI ({
   if (length(v$spectralData$SpectralLink[!is.na(v$spectralData$SpectralLink)]) > 0) {
     list(
       HTML(paste("<strong>This compound has spectral data.</strong>")),
-      actionButton("showSpectrum", "Go to Spectral Data Tab", class="btn-info")
+      actionButton("showSpectrum", "Go to Spectral Data", class="btn-info")
     )
   } else {
     HTML(paste(""))
@@ -106,7 +106,10 @@ output$hasSpectrum <- renderUI ({
 
 #opens the spectral data tab
 observeEvent(input$showSpectrum, {
-  updateTabsetPanel(session = session, inputId = "tabs", selected = "Spectral Data")
+  session$sendCustomMessage(
+    "scrollToElement",
+    list(id = "spectralDataSection")
+  )
 })
 
 #dropdown list of all the similar compound's inchikey. To be selected and added to the compounds table

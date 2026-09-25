@@ -51,7 +51,7 @@ function(input, output, session) {
   source("physicoChemicalPlot.R", local = TRUE)$value
   
   #stores all the code to render the spectrum user interface
-  source("renderSpectrumUI.R", local = TRUE)$value
+  # source("renderSpectrumUI.R", local = TRUE)$value
   
   #stores all the calculation for the spectrum user interface
   source("renderSpectrumServer.R", local = TRUE)$value

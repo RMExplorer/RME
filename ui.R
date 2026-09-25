@@ -31,7 +31,19 @@ ui <- navbarPage(
             padding-top: 70px;
           }
           ")),
-  tags$script(HTML("var lastClickTime = 0;"))
+  tags$script(HTML("
+    var lastClickTime = 0;
+
+    Shiny.addCustomMessageHandler('scrollToElement', function(message) {
+      var element = document.getElementById(message.id);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  "))
   ),
   id="tabs",
   position = "fixed-top",
@@ -77,47 +89,6 @@ ui <- navbarPage(
        )
     )
   ),
-  # navbarMenu("Search",
-  #            tabPanel("General Search",
-  #                     fluidPage(
-  #                       tags$head(htmltools::findDependencies(selectInput("toto", "toto", choices=NULL))), #line needed or else selectizeinput will not work properly
-  #                       theme = bs_theme(version = 5, bootswatch = "sandstone"),
-  #                       br(),
-  #                       h3("Substance Table"),
-  #                       uiOutput("RMESearch"),                                  #in compoundsUI.R (loaded in server.R)
-  #                       fixedPanel(
-  #                         actionButton("unselect", "Unselect All Rows",         #in compoundsServer.R (loaded in server.R)
-  #                                      class="btn-danger", 
-  #                                      style="justify-content:center;"),
-  #                         style="border:none;border-radius:25px;display:flex;",
-  #                         width = "200px", 
-  #                         right = "0px", 
-  #                         top = "100px"
-  #                       )
-  #                     )
-  #            ),
-  #            tabPanel("CRM Search",
-  #                     fluidPage(
-  #                       theme = bs_theme(version = 5, bootswatch = "sandstone"),
-  #                       uiOutput("crmSearch"),                                  #in crmSearchUI.R (loaded in server.R) (loaded in server.R)
-  #                       fixedPanel(
-  #                         actionButton("unselectCRMs", "Unselect All Rows",     #in crmSearchServer.R (loaded in server.R)
-  #                                      class="btn-danger", 
-  #                                      style="justify-content:center;"),
-  #                         style="border:none;border-radius:25px;display:flex;",
-  #                         width = "200px", 
-  #                         right = "0px", 
-  #                         top = "100px"
-  #                       )
-  #                     )
-  #            )
-  # ),
-  # tabPanel("Properties",
-  #          fluidPage(
-  #            theme = bs_theme(version = 5, bootswatch = "sandstone"),
-  #            uiOutput("properties"),                                            #in propertiesUI.R
-  #          )
-  # ),
   tabPanel("Polarity-MW Plot",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
@@ -137,12 +108,6 @@ ui <- navbarPage(
              br(), br(), br()
            )
   ),
-  # tabPanel("Spectral Data",
-  #          fluidPage(
-  #            theme = bs_theme(version = 5, bootswatch = "sandstone"),
-  #            tags$div(uiOutput("spectrumUI"))
-  #          )
-  # ),
   tabPanel("About",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
