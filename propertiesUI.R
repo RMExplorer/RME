@@ -54,6 +54,16 @@ output$properties <- renderUI({
       uiOutput("analyteInfoDownload"),
       htmlOutput('date'), 
       br()
+    ),
+    card(
+      style = "padding: 1.25rem; margin-top: 1.5rem;",
+      card_header("Spectral Data",
+                  style = "font-weight:bold; background: transparent; border-bottom: 1px solid #eee; padding-left:0; padding-top:0;"),
+      output$spectrumUI <- renderUI({
+        list(
+          uiOutput("spectrumView")
+        )
+      })
     )
   )
 })

@@ -9,14 +9,6 @@ output$spectrumDropdown <- renderUI({
     choices = spectrums)
 })
 
-#when none or more than 1 analyte is selected, show this information
-output$spectrumNothingSelected <- renderUI({
-  req(length(input$customTable_rows_selected) != 1)
-  HTML(paste(
-    "<p>Make sure you have selected a <strong>single</strong> option from the table in the 'General Search' tab."
-  ))
-})
-
 #outputs the spectral graph and the download button
 output$spectrumView <- renderUI({
   req(length(input$customTable_rows_selected) == 1)

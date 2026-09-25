@@ -137,12 +137,12 @@ ui <- navbarPage(
              br(), br(), br()
            )
   ),
-  tabPanel("Spectral Data",
-           fluidPage(
-             theme = bs_theme(version = 5, bootswatch = "sandstone"),
-             tags$div(uiOutput("spectrumUI"))
-           )
-  ),
+  # tabPanel("Spectral Data",
+  #          fluidPage(
+  #            theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  #            tags$div(uiOutput("spectrumUI"))
+  #          )
+  # ),
   tabPanel("About",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
