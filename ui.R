@@ -23,6 +23,10 @@ ui <- navbarPage(
           .navbar {
               padding: 0px;
           }
+          .sidebar-title {
+            padding: 0.25rem 1rem !important;
+            margin-bottom: 0 !important;
+          }
           body {
             padding-top: 70px;
           }
@@ -41,62 +45,79 @@ ui <- navbarPage(
   tabPanel("Home",
      fluidPage(
        theme = bs_theme(version = 5, bootswatch = "sandstone"),
-       br(),
-       div(
-         img(src='Icon.png', style = "height: 70vh; width:70vh;"),
-         h1("Reference Material Explorer", style= "font-weight: bold;"),
-         style="display:flex;flex-direction:column;align-items:center;"
-       ),
-       br(),br(),br(),br(),br(),
-       h3("The RM Explorer is an application built upon the NRC Digital Repository external Application Programming Interfaces (APIs) 
-         that allows users to visualise, analyse and display useful information about the Reference Materials produced by the National 
-         Research Council of Canada. This application relies upon and complies with FAIR data principles and showcases multiple uses of 
-         machine-readable information in digital CRM certificates.", style="font-weight: 100;"),
-     ),
-     br(), br(), hr(), 
-     uiOutput("about")                                                          #in about.R (loaded in server.R)
-  ),
-  navbarMenu("Search",
-             tabPanel("General Search",
-                      fluidPage(
-                        tags$head(htmltools::findDependencies(selectInput("toto", "toto", choices=NULL))), #line needed or else selectizeinput will not work properly
-                        theme = bs_theme(version = 5, bootswatch = "sandstone"),
-                        br(),
-                        h3("Substance Table"),
-                        uiOutput("RMESearch"),                                  #in compoundsUI.R (loaded in server.R)
-                        fixedPanel(
-                          actionButton("unselect", "Unselect All Rows",         #in compoundsServer.R (loaded in server.R)
-                                       class="btn-danger", 
-                                       style="justify-content:center;"),
-                          style="border:none;border-radius:25px;display:flex;",
-                          width = "200px", 
-                          right = "0px", 
-                          top = "100px"
-                        )
-                      )
+       tags$head(htmltools::findDependencies(selectInput("toto", "toto", choices=NULL))), # needed for selectizeInput
+       
+       layout_sidebar(
+         fillable = TRUE,
+         sidebar = sidebar(
+           width = "40%",
+           open = "open",
+           title = "Search",
+           accordion(
+             id = "searchAccordion",
+             open = "crm",
+             accordion_panel(
+               value = "crm",
+               title = "CRM Search",
+               uiOutput("crmSearch"),
+               actionButton("unselectCRMs", "Unselect All Rows", class="btn-danger"),
              ),
-             tabPanel("CRM Search",
-                      fluidPage(
-                        theme = bs_theme(version = 5, bootswatch = "sandstone"),
-                        uiOutput("crmSearch"),                                  #in crmSearchUI.R (loaded in server.R) (loaded in server.R)
-                        fixedPanel(
-                          actionButton("unselectCRMs", "Unselect All Rows",     #in crmSearchServer.R (loaded in server.R)
-                                       class="btn-danger", 
-                                       style="justify-content:center;"),
-                          style="border:none;border-radius:25px;display:flex;",
-                          width = "200px", 
-                          right = "0px", 
-                          top = "100px"
-                        )
-                      )
+             accordion_panel(
+               value = "compound",
+               title = "Compound Search",
+               uiOutput("RMESearch"),
+               actionButton("unselect", "Unselect All Rows", class="btn-danger")
              )
-  ),
-  tabPanel("Properties",
-           fluidPage(
-             theme = bs_theme(version = 5, bootswatch = "sandstone"),
-             uiOutput("properties"),                                            #in propertiesUI.R
            )
+         ),
+         
+         div(
+           uiOutput("properties")
+         )
+       )
+    )
   ),
+  # navbarMenu("Search",
+  #            tabPanel("General Search",
+  #                     fluidPage(
+  #                       tags$head(htmltools::findDependencies(selectInput("toto", "toto", choices=NULL))), #line needed or else selectizeinput will not work properly
+  #                       theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  #                       br(),
+  #                       h3("Substance Table"),
+  #                       uiOutput("RMESearch"),                                  #in compoundsUI.R (loaded in server.R)
+  #                       fixedPanel(
+  #                         actionButton("unselect", "Unselect All Rows",         #in compoundsServer.R (loaded in server.R)
+  #                                      class="btn-danger", 
+  #                                      style="justify-content:center;"),
+  #                         style="border:none;border-radius:25px;display:flex;",
+  #                         width = "200px", 
+  #                         right = "0px", 
+  #                         top = "100px"
+  #                       )
+  #                     )
+  #            ),
+  #            tabPanel("CRM Search",
+  #                     fluidPage(
+  #                       theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  #                       uiOutput("crmSearch"),                                  #in crmSearchUI.R (loaded in server.R) (loaded in server.R)
+  #                       fixedPanel(
+  #                         actionButton("unselectCRMs", "Unselect All Rows",     #in crmSearchServer.R (loaded in server.R)
+  #                                      class="btn-danger", 
+  #                                      style="justify-content:center;"),
+  #                         style="border:none;border-radius:25px;display:flex;",
+  #                         width = "200px", 
+  #                         right = "0px", 
+  #                         top = "100px"
+  #                       )
+  #                     )
+  #            )
+  # ),
+  # tabPanel("Properties",
+  #          fluidPage(
+  #            theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  #            uiOutput("properties"),                                            #in propertiesUI.R
+  #          )
+  # ),
   tabPanel("Polarity-MW Plot",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
@@ -116,16 +137,16 @@ ui <- navbarPage(
              br(), br(), br()
            )
   ),
-  tabPanel("About",
-    fluidPage(
-      theme = bs_theme(version = 5, bootswatch = "sandstone"),
-      uiOutput("about")                                                         #in about.R (loaded in server.R)
-    )
-  ),
   tabPanel("Spectral Data",
            fluidPage(
              theme = bs_theme(version = 5, bootswatch = "sandstone"),
-             tags$div(uiOutput("spectrumUI"))                                   
+             tags$div(uiOutput("spectrumUI"))
+           )
+  ),
+  tabPanel("About",
+           fluidPage(
+             theme = bs_theme(version = 5, bootswatch = "sandstone"),
+             uiOutput("about")                                                  #in about.R (loaded in server.R)
            )
   ),
   navbarMenu("More",

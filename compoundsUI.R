@@ -25,11 +25,14 @@ output$RMESearch <- renderUI({
                                    style="display:flex;"), 
                      class="btn-outline-success"
         ),
+        style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
+      ),
+      div(
         input_task_button("saveAnalytes", "Save Table Substances", 
-                    class="btn-outline-success"
-       ),
-       input_task_button("loadAnalytes", "Load Saved Substances", 
-                    class="btn-outline-info"
+                          class="btn-outline-success"
+        ),
+        input_task_button("loadAnalytes", "Load Saved Substances", 
+                          class="btn-outline-info"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
@@ -42,7 +45,7 @@ output$RMESearch <- renderUI({
         tags$div(img(src='loading.gif', style = "height: 4rem;"), 
                  style="display:flex;justify-content:center;")),
       DTOutput("customTable"),
-      style = "padding:20px 0px 20px 0px;"
+      style = "padding:20px 0px 20px 0px; overflow-x: auto; max-width: 100%;"
     )
   )
 })

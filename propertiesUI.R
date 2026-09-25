@@ -1,7 +1,9 @@
 #contains the properties UI
 #the rendering for the text content is done in propertiesText.R
 output$properties <- renderUI({
-  list(
+  div(
+    style = "padding-left: 20px;",
+    
     conditionalPanel("$('#summary').hasClass('recalculating') | $('#html').hasClass('shiny-busy')", 
                      fixedPanel(
                        tags$div(img(src='loading.gif', style = "height: 4rem;"), 
@@ -14,17 +16,13 @@ output$properties <- renderUI({
                      )),
     div(uiOutput("propertiesNothingSelected"), style="display:flex;justify-content:center;font-size:2rem;"),
     fluidRow(
-      column(5, align = "left",
-             br(),
-             plotOutput('molecule', height = "70vh")
-      ),
       column(7, align="left",
              h4(textOutput('currentCompoundName')),
              uiOutput("hasSpectrum"),
              uiOutput("information"),
              uiOutput("similarCompounds"),
              uiOutput("selectCRMdropdown"),
-             (uiOutput('title')),
+             uiOutput('title'),
              htmlOutput('summary'), 
              uiOutput("noInfo"),
              uiOutput('doi'), 
@@ -32,6 +30,10 @@ output$properties <- renderUI({
              uiOutput("analyteInfoDownload"),
              htmlOutput('date'), 
              br()
+      ),
+      column(5, align = "left",
+             br(),
+             plotOutput('molecule', height = "70vh")
       )
     )
   )
