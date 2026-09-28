@@ -39,6 +39,14 @@ ui <- navbarPage(
         });
       }
     });
+    $(document).on('shiny:inputchanged', function(event) {
+      if (event.name === 'customTable_rows_selected' && event.value && event.value.length === 1) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        $('.bslib-sidebar-layout > .main').each(function() {
+          this.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+    });
   "))
   ),
   id="tabs",
@@ -60,6 +68,7 @@ ui <- navbarPage(
          sidebar = sidebar(
            width = "40%",
            open = "open",
+           resizable = FALSE,
            title = "Search",
            accordion(
              id = "searchAccordion",
