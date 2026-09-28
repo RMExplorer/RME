@@ -81,8 +81,7 @@ ui <- navbarPage(
              accordion_panel(
                value = "compound",
                title = "Compound Search",
-               uiOutput("RMESearch"),
-               actionButton("unselect", "Unselect All Rows", class="btn-danger")
+               uiOutput("RMESearch")
              )
            )
          ),

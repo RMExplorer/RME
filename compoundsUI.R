@@ -2,6 +2,7 @@ output$RMESearch <- renderUI({
   list(
     tags$div(
       uiOutput("js_code2"),
+      
       div(
         uiOutput("searchAnalyte"),
         div(
@@ -12,34 +13,45 @@ output$RMESearch <- renderUI({
             style="display:flex;"),
         style = "display:flex;gap:10px;align-items: flex-end;"
       ),
+      
       textOutput("urlerror"),
+      
       div(
-        actionButton("removeAnalyte", 
-                     "Remove Selected Rows From Your Table", 
-                     class="btn-outline-warning"),
-        actionButton("removeAllAnalytes", 
-                     "Remove All Rows From Your Table", 
-                     class="btn-outline-danger"),
         actionButton("addallSubstances", div("Add All Compounds to the table", tooltip_ui("substanceaddTooltip", 
-                                                                                        "May take up to 3+ minutes. Not all compounds from the NRC repository will be added due to search limitations."),
-                                   style="display:flex;"), 
-                     class="btn-outline-success"
+                                                                                          "May take up to 3+ minutes. Not all 
+                                                                                          compounds from the NRC repository will be 
+                                                                                          added due to search limitations."),
+                                             style="display:flex;"), 
+                     class="btn-success btn-sm"
         ),
-        style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
-      ),
-      div(
         input_task_button("saveAnalytes", "Save Table Compounds", 
-                          class="btn-outline-success"
+                          class="btn-outline-success btn-sm"
         ),
         input_task_button("loadAnalytes", "Load Saved Compounds", 
-                          class="btn-outline-info"
+                          class="btn-outline-info btn-sm"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
+      
       p("Instructions: Add compounds to the table below using the search dropdown above. 
         The table is linked to the `Properties`, `pKow-MW Plot`, and `Spectral Data` tab. 
         Select one row from the table in order to see its properties in the `Properties` tab, 
         or its spectral data in the `Spectral Data` tab. Reference Materials that appear in all rows are highlighted in red."),
+      
+      hr(),
+      
+      #table header with the actions that remove from the table
+      div(
+        h6("Your compound table", style = "margin:0;font-weight:bold;"),
+        div(
+          actionButton("unselect", "Unselect All Rows", class="btn-outline-warning btn-sm"),
+          actionButton("removeAnalyte", "Remove Selected", class="btn-outline-danger btn-sm"),
+          actionButton("removeAllAnalytes", "Clear All", class="btn-danger btn-sm"),
+          style = "display:flex;gap:8px;"
+        ),
+        style = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-bottom:0.5rem;"
+      ),
+      
       conditionalPanel(
         "$('#customTable').hasClass('recalculating') | $('#customTable').css('display') === 'none'", 
         tags$div(img(src='loading.gif', style = "height: 4rem;"), 
