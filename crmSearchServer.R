@@ -187,6 +187,10 @@ observeEvent(input$addCRM, {
   namesToAdd <- namesToAdd[!namesToAdd %in% yourTableAnalytes()]
   newList <- append(namesToAdd, yourTableAnalytes())
   yourTableAnalytes(newList)
+  
+  #switch the sidebar accordion over to the compound search
+  accordion_panel_open("searchAccordion", "compound")
+  accordion_panel_close("searchAccordion", "crm")
 })
 
 
