@@ -112,6 +112,41 @@ observeEvent(input$showSpectrum, {
   )
 })
 
+#min/max mass fraction and mass concentration of the selected compound across the CRMs it appears in
+#(these values are calculated in compoundsServer.R and stored in getTableData$result())
+output$massRange <- renderUI({
+  req(length(input$customTable_rows_selected) == 1)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  data <- result %>% slice(input$customTable_rows_selected)
+  
+  #formats one of the min/max columns, matched by name so the exact unit characters do not matter
+  rangeValue <- function(pattern, unit) {
+    col <- grep(pattern, names(data), value = TRUE)
+    if (length(col) == 0) return("No Results")
+    value <- suppressWarnings(as.numeric(data[[col[1]]]))
+    #0 is the placeholder used when the compound has no mass fraction/concentration in any CRM
+    if (is.na(value) || value == 0) return("No Results")
+    paste(format(signif(value, 4), scientific = FALSE, big.mark = ",", trim = TRUE), unit)
+  }
+  
+  field <- function(label, value) {
+    div(
+      p(strong(label),
+        style = "margin-bottom: 2px; font-size: 0.8rem; color:#6c757d; text-transform:uppercase; letter-spacing:0.02em;"),
+      p(value, style = "margin-bottom: 0; word-break: break-word;")
+    )
+  }
+  
+  div(
+    style = "display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem 1.5rem; padding: 0.5rem 0 0.5rem 0;",
+    field("Minimum Mass Fraction", rangeValue("Minimum Mass Fraction", "\u00b5g/g")),
+    field("Maximum Mass Fraction", rangeValue("Maximum Mass Fraction", "\u00b5g/g")),
+    field("Minimum Mass Concentration", rangeValue("Minimum Mass Concentration", "\u00b5g/mL")),
+    field("Maximum Mass Concentration", rangeValue("Maximum Mass Concentration", "\u00b5g/mL"))
+  )
+})
+
 #dropdown list of all the similar compound's inchikey. To be selected and added to the compounds table
 output$similarCompounds <- renderUI({
   req(length(input$customTable_rows_selected) == 1)

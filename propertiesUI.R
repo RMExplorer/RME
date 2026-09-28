@@ -30,7 +30,9 @@ output$properties <- renderUI({
                     style = "font-weight:bold; background: transparent; border-bottom: 1px solid #eee; padding-left:0; padding-top:0;"),
         uiOutput("information"),
         hr(),
-        uiOutput("similarCompounds")
+        uiOutput("similarCompounds"),
+        hr(),
+        uiOutput("massRange")
       ),
       
       card(
