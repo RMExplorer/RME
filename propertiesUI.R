@@ -10,7 +10,8 @@ output$properties <- renderUI({
                        left = 0,
                        right = 0,
                        bottom = 0,
-                       style="display:flex;justify-content:center;align-content: center;background-color: rgba(255, 255, 255, 1);"
+                       style="display: flex; justify-content: center; align-content: center; 
+                       background-color: rgba(255, 255, 255, 0.6); z-index: 9999 !important;"
                      )),
     div(uiOutput("propertiesNothingSelected"), style="display:flex;justify-content:center;font-size:2rem;"),
     
