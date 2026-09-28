@@ -336,7 +336,7 @@ observeEvent(input$customTable_rows_selected, {
     result <- getTableData$result()
     row = result %>% slice(input$customTable_rows_selected)
     
-    if (row$InchiKey > 0) {
+    if (!is.na(row$InchiKey) && row$InchiKey > 0) {
       # search by name + inchikey for max coverage
       link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                     gsub(' ','+', row$Name), '+OR+', 
