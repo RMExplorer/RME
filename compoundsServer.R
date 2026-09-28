@@ -335,8 +335,18 @@ observeEvent(input$customTable_rows_selected, {
     req(length(getTableData$result()) > 0)
     result <- getTableData$result()
     row = result %>% slice(input$customTable_rows_selected)
-    link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                  gsub(' ','+', row$Name) , '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+    
+    if (row$InchiKey > 0) {
+      # search by name + inchikey for max coverage
+      link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                    gsub(' ','+', row$Name), '+OR+', 
+                    gsub("/", "%2F", gsub(" ", "+", row$InchiKey)), 
+                    '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+    } else {
+      # search only by name if inchikey does not exist
+      link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
+                    gsub(' ','+', row$Name), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+    }
 
     #overrides the ssl verifypeer so the webpage can be reached
     h <- curl::new_handle()
@@ -347,20 +357,6 @@ observeEvent(input$customTable_rows_selected, {
     d = xml_children(xmlDoc)
 
     df = xml_to_dataframe(d)[-1,-c(1,2)]
-    
-    #if searching the name column in DR resulted in nothing, then search the inchikey
-    if (df$title[1] == "No results" && length(row$InchiKey) > 0) {
-      link <- paste('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                    row$InchiKey, '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', sep="")
-      
-      h <- curl::new_handle()
-      curl::handle_setopt(h, ssl_verifypeer = 0)
-      d = xml_children(read_xml(geturl(link, h)))
-      rm(h)
-      
-      df = xml_to_dataframe(d)[-1,-c(1,2)]
-      
-    }
 
     #get all the mass spectrum dataset link
     entries <- xmlDoc %>% xml_ns_strip() %>% xml_find_all(xpath="//entry")
