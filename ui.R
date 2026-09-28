@@ -77,7 +77,6 @@ ui <- navbarPage(
                value = "crm",
                title = "CRM Search",
                uiOutput("crmSearch"),
-               actionButton("unselectCRMs", "Unselect All Rows", class="btn-danger"),
              ),
              accordion_panel(
                value = "compound",

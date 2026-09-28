@@ -2,6 +2,8 @@ output$crmSearch <- renderUI({
   list(
     tags$div(
       uiOutput("js_code"),
+      
+      #search inputs
       fluidRow(
         column(
           width = 12,
@@ -16,32 +18,40 @@ output$crmSearch <- renderUI({
           uiOutput("searchMaterial")
         )
       ),
+      
+      #actions that add to the compound table
       div(
-        actionButton("removeCRM", 
-                     "Remove Selected Rows From Your Table", 
-                     class="btn-outline-warning"),
-        actionButton("removeAllCRM", 
-                     "Remove All Rows From Your Table", 
-                     class="btn-outline-danger"),
-        style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
+        actionButton("addCRM", 
+                     div("Add chosen CRM(s) to the Compound table", 
+                         tooltip_ui("crmaddTooltip", 
+                                    "Select CRM rows, then press this button to add the corresponding compounds to the compound table. The Compound Search panel will open so you can view it."),
+                         style = "display:flex;gap:4px;"), 
+                     class = "btn-success btn-sm"),
+        actionButton("addAllCRMs", "Add all CRMs to the table", 
+                     class = "btn-outline-success btn-sm"),
+        style = "display:flex;flex-wrap:wrap;gap:8px;padding:0.25rem 0 0.75rem 0;"
       ),
+      
+      hr(),
+      
+      #table header with the actions that remove from the table
       div(
-        actionButton("addAllCRMs", "Add All CRMs to the table", 
-                     class="btn-outline-success"
+        h6("Your CRM table", style = "margin:0;font-weight:bold;"),
+        div(
+          actionButton("unselectCRMs", "Unselect All Rows", class="btn-outline-warning btn-sm"),
+          actionButton("removeCRM", "Remove selected", class = "btn-outline-danger btn-sm"),
+          actionButton("removeAllCRM", "Clear all", class = "btn-danger btn-sm"),
+          style = "display:flex;gap:8px;"
         ),
-        actionButton("addCRM", div("Add Chosen CRM(s) to the Compound table", tooltip_ui("crmaddTooltip", 
-                                                                                           "Select CRM rows, then press this button to add the corresponding compounds to the compound table. Go to the Compound Search tab to view the compound table."),
-                                   style="display:flex;"), 
-                     class="btn-outline-success"
-        ),
-        style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
+        style = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-bottom:0.5rem;"
       ),
+      
       conditionalPanel(
         "$('#crmTable').hasClass('recalculating') | $('#crmTable').css('display') === 'none'", 
         tags$div(img(src='loading.gif', style = "height: 4rem;"), 
                  style="display:flex;justify-content:center;")),
       DTOutput("crmTable"),
-      style = "padding:20px 0px 20px 0px; max-width: 100%;"
+      style = "padding:10px 0px 20px 0px; max-width: 100%;"
     )
   )
 })
