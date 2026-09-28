@@ -41,13 +41,17 @@ getCRMData <- function(crm){
 }
 
 output$searchCRM <- renderUI({
-  selectizeInput(inputId = "selectCRM", div("Search for a CRM", 
-                                                tooltip_ui("crmsearchTooltip", 
-                                                           "CRMs related to your search will also be added."),
-                                                style="display:flex;"), 
+  selectizeInput(inputId = "selectCRM", label = div(
+                                          style = "display: flex; align-items: center; gap: 6px;",
+                                          span("Search for a CRM"),
+                                          tooltip_ui(
+                                            "crmsearchTooltip",
+                                            "CRMs related to your search will also be added."
+                                          )
+                                        ),
                  choices = c("", allCrms), 
                  selected = NULL, 
-                 width="350px")
+                 width="100%")
 })
 
 #when a new crm is selected, add it to the table list
@@ -82,14 +86,14 @@ observeEvent(input$selectCRM, {
 output$searchAffiliate <- renderUI({
   #affiliates is calculated in global.R
   selectizeInput(inputId = "selectedAffiliate", "Select an Affiliate", 
-                 choices = append("", affiliates), selected = NULL, width="500px")
+                 choices = append("", affiliates), selected = NULL, width="100%")
 })
 
 #the 'Select material type' drop down in the 'crm search' page
 output$searchMaterial <- renderUI({
   #materials is calculated in global.R
   selectizeInput(inputId = "selectedMaterial", "Select a Material Type", 
-                 choices = append("", materials), selected = NULL, width="500px")
+                 choices = append("", materials), selected = NULL, width="100%")
 })
 
 #when a new affiliate is selected, add it to the table list

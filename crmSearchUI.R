@@ -2,11 +2,19 @@ output$crmSearch <- renderUI({
   list(
     tags$div(
       uiOutput("js_code"),
-      div(
-        uiOutput("searchCRM"),
-        uiOutput("searchAffiliate"),
-        uiOutput("searchMaterial"),
-        style = "display:flex;gap:10px;"
+      fluidRow(
+        column(
+          width = 12,
+          uiOutput("searchCRM") 
+        ),
+        column(
+          width = 6,
+          uiOutput("searchAffiliate")
+        ),
+        column(
+          width = 6,
+          uiOutput("searchMaterial")
+        )
       ),
       div(
         actionButton("removeCRM", 
