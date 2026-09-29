@@ -43,11 +43,11 @@ output$properties <- renderUI({
     
     card(
       style = "padding: 1.25rem; margin-top: 1.5rem;",
-      card_header("Certificate Information",
+      card_header("CRM Information",
                   style = "font-weight:bold; background: transparent; border-bottom: 1px solid #eee; padding-left:0; padding-top:0;"),
-      uiOutput("selectCRMdropdown"),
-      hr(),
       uiOutput("massRange"),
+      hr(),
+      uiOutput("selectCRMdropdown"),
       hr(),
       uiOutput('title'),
       htmlOutput('summary'), 
