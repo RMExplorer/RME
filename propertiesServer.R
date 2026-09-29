@@ -369,15 +369,6 @@ output$analyteTable <- renderDT({
   }
 })
 
-# hides analyte table container when analyte table doesn't exist
-observe({
-  if (tableExists()) {
-    shinyjs::show("analyteTable")
-  } else {
-    shinyjs::hide("analyteTable")
-  }
-})
-
 #download handler for the analyte table download button
 output$downloadTable <- downloadHandler(
   filename = function() {
