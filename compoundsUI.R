@@ -17,17 +17,17 @@ output$RMESearch <- renderUI({
       textOutput("urlerror"),
       
       div(
-        actionButton("addallSubstances", div("Add All Compounds", tooltip_ui("substanceaddTooltip", 
-                                                                                          "May take up to 3+ minutes. Not all 
+        actionButton("addallSubstances", div("Add All", tooltip_ui("substanceaddTooltip", "Add all compounds to the table. 
+                                                                                          May take up to 3+ minutes. Not all 
                                                                                           compounds from the NRC repository will be 
                                                                                           added due to search limitations."),
                                              style="display:flex;"), 
                      class="btn-success btn-sm"
         ),
-        input_task_button("saveAnalytes", "Save Table Compounds", 
+        input_task_button("saveAnalytes", "Save Table", 
                           class="btn-outline-success btn-sm"
         ),
-        input_task_button("loadAnalytes", "Load Saved Compounds", 
+        input_task_button("loadAnalytes", "Load Table", 
                           class="btn-outline-info btn-sm"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
