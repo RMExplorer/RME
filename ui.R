@@ -12,7 +12,7 @@ library(bsicons)                    #for icons
 source("tooltip_ui.R")
 
 ui <- navbarPage(
-  theme = bs_theme(version = 5, bootswatch = "sandstone"),
+  theme = bs_theme(version = 5, preset = "flatly"),
   header = list(
   useShinyjs(),
   # splash screen shown immediately on load/reload
@@ -30,9 +30,22 @@ ui <- navbarPage(
           }
           .navbar {
               padding: 0px;
+              background-color: #d5d8dc !important
+          }
+          .navbar .nav-link {
+              color: #292d34 !important;
+          }
+          .navbar .navbar-brand {
+              color: #292d34 !important;
           }
           body {
             padding-top: 70px;
+          }
+          .bslib-sidebar-layout .sidebar {
+            background-color: #F5F6F8 !important;
+          }
+          .accordion-item {
+            background-color: #F5F6F8 !important;
           }
           ")),
   tags$script(HTML("
@@ -84,13 +97,13 @@ ui <- navbarPage(
   #p(em("V 0.3 - NRC Biotoxin Metrology")),
   tabPanel("Home",
      fluidPage(
-       theme = bs_theme(version = 5, bootswatch = "sandstone"),
+       theme = bs_theme(version = 5, preset = "flatly"),
        tags$head(htmltools::findDependencies(selectInput("toto", "toto", choices=NULL))), # needed for selectizeInput
        
        layout_sidebar(
          fillable = TRUE,
          sidebar = sidebar(
-           width = "40%",
+           width = "30%",
            open = "open",
            resizable = FALSE,
            title = "Search",
@@ -118,7 +131,7 @@ ui <- navbarPage(
   ),
   tabPanel("Polarity-MW Plot",
            fluidPage(
-             theme = bs_theme(version = 5, bootswatch = "sandstone"),
+             theme = bs_theme(version = 5, preset = "flatly"),
              div(HTML("<h3>Polarity <i>versus</i> Molecular Weight Plot </h3>"),
                  tooltip_ui("physico_chemical_instructions", 
                             "Shows all the substamces in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
@@ -137,20 +150,20 @@ ui <- navbarPage(
   ),
   tabPanel("About",
            fluidPage(
-             theme = bs_theme(version = 5, bootswatch = "sandstone"),
+             theme = bs_theme(version = 5, preset = "flatly"),
              uiOutput("about")                                                  #in about.R (loaded in server.R)
            )
   ),
   navbarMenu("More",
              tabPanel("CMC Information",
                       fluidPage(
-                        theme = bs_theme(version = 5, bootswatch = "sandstone"),
+                        theme = bs_theme(version = 5, preset = "flatly"),
                         DTOutput("kcdbTable")                                   #in kcdbserver.R (loaded in server.R)
                       )
              ),
              tabPanel("Instructions",
                       fluidPage(
-                        theme = bs_theme(version = 5, bootswatch = "sandstone"),
+                        theme = bs_theme(version = 5, preset = "flatly"),
                         uiOutput("instructions")                                #in instructions.R (loaded in server.R)
                       )
              ),
