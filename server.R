@@ -29,6 +29,12 @@ source("tooltip_ui.R")
 # server  ----
 function(input, output, session) {
   
+  # hides the startup splash screen once the initial reactive flush completes,
+  # i.e. once the initial CRM search / properties content has actually rendered
+  session$onFlushed(function() {
+    shinyjs::delay(200, shinyjs::hide("loadingScreen"))
+  }, once = TRUE)
+  
   #stores all the UI for the general search page
   source("compoundsUI.R", local = TRUE)$value
   

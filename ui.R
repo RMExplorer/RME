@@ -15,6 +15,14 @@ ui <- navbarPage(
   theme = bs_theme(version = 5, bootswatch = "sandstone"),
   header = list(
   useShinyjs(),
+  # splash screen shown immediately on load/reload
+  # hidden once the initial content has rendered (see session$onFlushed in server.R)
+  div(
+    id = "loadingScreen",
+    style = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background-color:#ffffff;display:flex;flex-direction:column;align-items:center;justify-content:center;",
+    img(src = "Icon.png", style = "height:18vh;"),
+    h4("Loading Reference Material Explorer...", style = "margin-top:1rem;font-weight:bold;color:#5b7b7a;")
+  ),
   tags$style(HTML("
           .navbar-nav {
               align-items: center;
@@ -39,6 +47,22 @@ ui <- navbarPage(
         });
       }
     });
+    
+    var resizeTimer;
+    $(window).on('resize', function() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function() {
+        if ($.fn.dataTable.isDataTable('#crmTable')) {
+          $('#crmTable').closest('.dataTables_wrapper').css('width', '100%');
+          $('#crmTable').DataTable().columns.adjust().draw(false);
+        }
+        if ($.fn.dataTable.isDataTable('#customTable')) {
+          $('#customTable').closest('.dataTables_wrapper').css('width', '100%');
+          $('#customTable').DataTable().columns.adjust().draw(false);
+        }
+      }, 150);
+    });
+    
     $(document).on('shiny:inputchanged', function(event) {
       if (event.name === 'customTable_rows_selected' && event.value && event.value.length === 1) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
