@@ -20,6 +20,7 @@ output$molecule <- renderPlot({
   req(length(getTableData$result()) > 0)
   result <- getTableData$result()
   selectedAnalyte <- result %>% slice(input$customTable_rows_selected)
+  req(!is.na(selectedAnalyte$"Isomeric Smiles"))
   smil <- selectedAnalyte$"Isomeric Smiles"
   mol <- parse.smiles(smil)[[1]]
   req(mol)
@@ -317,7 +318,7 @@ output$date <- renderUI({
   }
 })
 
-tableExisits <- reactiveVal(FALSE)
+tableExists <- reactiveVal(FALSE)
 
 #outputs the analyte table (if it exists)
 output$analyteTable <- renderDT({
@@ -360,11 +361,20 @@ output$analyteTable <- renderDT({
   
   if(grepl('Analyte',paste(d))){
     v$table =  ddf[length(ddf)]
-    tableExisits(TRUE)
+    tableExists(TRUE)
     return(datatable(data.frame(d))) 
   } else {
-    tableExisits(FALSE)
+    tableExists(FALSE)
     return(NULL)
+  }
+})
+
+# hides analyte table container when analyte table doesn't exist
+observe({
+  if (tableExists()) {
+    shinyjs::show("analyteTable")
+  } else {
+    shinyjs::hide("analyteTable")
   }
 })
 
@@ -383,7 +393,7 @@ output$analyteInfoDownload <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
-  if (tableExisits()){
+  if (tableExists()){
     downloadButton("downloadTable", "Download the Table as a .CSV")
   }
 })

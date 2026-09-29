@@ -285,7 +285,7 @@ v <- reactiveValues('data' = nrc_dr_all,
                     spectralData = NULL)
 
 #change this with google sheets data for the logged in user
-yourTableAnalytes <- reactiveVal(list("Domoic Acid", "Azaspiracid-1", "Azaspiracid-2"))
+yourTableAnalytes <- reactiveVal(list())
 
 #the 'Select an Analyte' drop down in the 'Substances' page which also allows users to enter their own analyte names
 output$searchAnalyte <- renderUI({

@@ -140,6 +140,18 @@ observeEvent(input$removeAllCRM, {
 })
 
 output$crmTable <- renderDT({
+  # when no CRMs have been added yet, show the empty table
+  if (length(crmList()) == 0) {
+    emptyData <- data.frame("Name" = character(0),
+                            "Affiliates" = character(0),
+                            "Format" = character(0),
+                            "Material Type" = character(0),
+                            check.names = FALSE)
+    return(datatable(emptyData, 
+                     options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'),
+                     escape = FALSE,
+                     filter= list(position='top', clear = FALSE)))
+  }
   req(length(crmTableData()) > 0)
   data <- crmTableData()
   colnames(data) <- c("id", "CRM", "Name", "Affiliates", "Format", "Material Type")
@@ -161,6 +173,11 @@ observeEvent(input$addAllCRMs, {
 #fired when user trys to add the analytes from a crm to the substance table
 observeEvent(input$addCRM, {
   req(input$crmTable_rows_selected)
+  
+  #switch the sidebar accordion over to the compound search
+  accordion_panel_open("searchAccordion", "compound")
+  accordion_panel_close("searchAccordion", "crm")
+  
   selected <- crmTableData() %>% slice(input$crmTable_rows_selected)
   #"<a href=\"#\" class=\"view-info\" data-name=", name,">", name, "</a>"
   ids <- selected$ID
@@ -187,10 +204,6 @@ observeEvent(input$addCRM, {
   namesToAdd <- namesToAdd[!namesToAdd %in% yourTableAnalytes()]
   newList <- append(namesToAdd, yourTableAnalytes())
   yourTableAnalytes(newList)
-  
-  #switch the sidebar accordion over to the compound search
-  accordion_panel_open("searchAccordion", "compound")
-  accordion_panel_close("searchAccordion", "crm")
 })
 
 
