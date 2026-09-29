@@ -385,7 +385,7 @@ output$analyteInfoDownload <- renderUI({
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if (tableExists()){
-    downloadButton("downloadTable", "Download the Table as a .CSV")
+    downloadButton("downloadTable", "Download the Table as a .CSV", style = "width: fit-content;")
   }
 })
 

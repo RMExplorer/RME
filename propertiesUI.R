@@ -31,8 +31,6 @@ output$properties <- renderUI({
         uiOutput("information"),
         hr(),
         uiOutput("similarCompounds"),
-        hr(),
-        uiOutput("massRange")
       ),
       
       card(
@@ -49,14 +47,15 @@ output$properties <- renderUI({
                   style = "font-weight:bold; background: transparent; border-bottom: 1px solid #eee; padding-left:0; padding-top:0;"),
       uiOutput("selectCRMdropdown"),
       hr(),
+      uiOutput("massRange"),
+      hr(),
       uiOutput('title'),
       htmlOutput('summary'), 
       uiOutput("noInfo"),
       uiOutput('doi'), 
-      DTOutput('analyteTable'),
+      htmlOutput('date'),
       uiOutput("analyteInfoDownload"),
-      htmlOutput('date'), 
-      br()
+      DTOutput('analyteTable')
     ),
     card(
       id = "spectralDataSection",
