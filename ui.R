@@ -32,11 +32,11 @@ ui <- navbarPage(
               padding: 0px;
               background-color: #d5d8dc !important
           }
-          .navbar .nav-link {
+          .navbar-brand {
               color: #292d34 !important;
           }
-          .navbar .navbar-brand {
-              color: #292d34 !important;
+          .navbar .nav-link:not(.active) {
+              color: #292d34
           }
           body {
             padding-top: 70px;
