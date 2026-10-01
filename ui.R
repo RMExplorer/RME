@@ -78,21 +78,6 @@ ui <- navbarPage(
       }
     });
     
-    var resizeTimer;
-    $(window).on('resize', function() {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function() {
-        if ($.fn.dataTable.isDataTable('#crmTable')) {
-          $('#crmTable').closest('.dataTables_wrapper').css('width', '100%');
-          $('#crmTable').DataTable().columns.adjust().draw(false);
-        }
-        if ($.fn.dataTable.isDataTable('#customTable')) {
-          $('#customTable').closest('.dataTables_wrapper').css('width', '100%');
-          $('#customTable').DataTable().columns.adjust().draw(false);
-        }
-      }, 150);
-    });
-    
     $(document).on('shiny:inputchanged', function(event) {
       if (event.name === 'customTable_rows_selected' && event.value && event.value.length === 1) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
