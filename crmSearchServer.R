@@ -150,14 +150,32 @@ output$crmTable <- renderDT({
     return(datatable(emptyData, 
                      options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'),
                      escape = FALSE,
+                     rownames = FALSE,
                      filter= list(position='top', clear = FALSE)))
   }
   req(length(crmTableData()) > 0)
   data <- crmTableData()
   colnames(data) <- c("id", "CRM", "Name", "Affiliates", "Format", "Material Type")
   datatable(data[, c("Name", "Affiliates", "Format", "Material Type")], 
-            options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'),
+            options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip',
+                           # truncate long Affiliates values. Clicking "more"/"less" expands or collapses
+                           # the cell (handled by the .cell-toggle click handler in ui.R)
+                           columnDefs = list(list(
+                             targets = 1,
+                             render = JS(
+                               "function(data, type, row, meta) {",
+                               "  if (type === 'display' && data != null && data.length > 40) {",
+                               "    var short = data.substr(0, 40) + '...';",
+                               "    return '<span class=\"cell-expand\" data-full=\"' + encodeURIComponent(data) +",
+                               "           '\" data-short=\"' + encodeURIComponent(short) +",
+                               "           '\" data-expanded=\"false\">' + short + ' <a href=\"#\" class=\"cell-toggle\">more</a></span>';",
+                               "  }",
+                               "  return data;",
+                               "}"
+                             )
+                           ))),
             escape = FALSE,
+            rownames = FALSE,
             filter= list(position='top', clear = FALSE))
 })
 

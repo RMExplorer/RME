@@ -47,9 +47,26 @@ ui <- navbarPage(
           .accordion-item {
             background-color: #F5F6F8 !important;
           }
+          #crmTable, #customTable {
+            font-size: 0.85rem;
+          }
           ")),
   tags$script(HTML("
     var lastClickTime = 0;
+    
+    // expands/collapses a truncated table cell when its 'more'/'less' link is clicked
+    $(document).on('click', '.cell-toggle', function(e){
+      e.preventDefault();
+      var span = $(this).closest('.cell-expand');
+      var expanded = span.attr('data-expanded') === 'true';
+      if (expanded) {
+        span.html(decodeURIComponent(span.attr('data-short')) + ' <a href=\"#\" class=\"cell-toggle\">more</a>');
+        span.attr('data-expanded', 'false');
+      } else {
+        span.html(decodeURIComponent(span.attr('data-full')) + ' <a href=\"#\" class=\"cell-toggle\">less</a>');
+        span.attr('data-expanded', 'true');
+      }
+    });
 
     Shiny.addCustomMessageHandler('scrollToElement', function(message) {
       var element = document.getElementById(message.id);
@@ -103,7 +120,7 @@ ui <- navbarPage(
        layout_sidebar(
          fillable = TRUE,
          sidebar = sidebar(
-           width = "30%",
+           width = "35%",
            open = "open",
            resizable = FALSE,
            title = "Search",

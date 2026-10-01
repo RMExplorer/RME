@@ -581,8 +581,8 @@ output$customTable <- renderDT({
   
   if (is.null(result) || !is.data.frame(result) || nrow(result) == 0) {
     data <- data.frame("Name" = character(0),
-                       "Molecular Formula" = character(0),
-                       "Molecular Weight" = numeric(0),
+                       "MF" = character(0),
+                       "MW" = numeric(0),
                        "pKow" = numeric(0),
                        "Reference Materials" = character(0),
                        # "Minimum Mass Fraction (µg/g)" = numeric(0),
@@ -602,7 +602,7 @@ output$customTable <- renderDT({
                        # "Minimum Mass Concentration (µg/mL)" = as.numeric(data$"Minimum Mass Concentration (µg/mL)"), 
                        # "Maximum Mass Concentration (µg/mL)" = as.numeric(data$"Maximum Mass Concentration (µg/mL)"),
                        check.names = FALSE)
-    colnames(data) <- c("Name", "Molecular Formula", "Molecular Weight", "pKow", "Reference Materials"
+    colnames(data) <- c("Name", "MF", "MW", "pKow", "Reference Materials"
                         # "Minimum Mass Fraction (µg/g)", 
                         # "Maximum Mass Fraction (µg/g)", "Minimum Mass Concentration (µg/mL)", 
                         # "Maximum Mass Concentration (µg/mL)"
@@ -611,7 +611,7 @@ output$customTable <- renderDT({
   
   datatable(data, 
             options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'), 
-            filter= list(position='top', clear = FALSE), escape = FALSE)
+            filter= list(position='top', clear = FALSE), escape = FALSE, rownames = FALSE)
 })
 
 #unselect all rows in the custom table when unselect button is clicked
