@@ -78,14 +78,33 @@ ui <- navbarPage(
       }
     });
     
-    $(document).on('shiny:inputchanged', function(event) {
-      if (event.name === 'customTable_rows_selected' && event.value && event.value.length === 1) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        $('.bslib-sidebar-layout > .main').each(function() {
-          this.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+    $(document).on('click', '.view-info', function(e){
+      e.preventDefault();
+      var thisClickTime = new Date().getTime();
+      if (thisClickTime - lastClickTime > 2000) {
+        var name = $(this).data('name');
+        Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+        lastClickTime = thisClickTime;
       }
     });
+    
+    // fire on press: the click's target can end up as the layout container if the table redraws mid-click
+    document.addEventListener('mousedown', function(e) {
+      if (e.button !== 0) return;
+      var link = e.target.closest('.view-info2');
+      if (!link) return;
+      e.preventDefault();
+      var now = new Date().getTime();
+      if (now - lastClickTime > 2000) {
+        Shiny.setInputValue('clicked_name', link.getAttribute('data-name'), {priority: 'event'});
+        lastClickTime = now;
+      }
+    }, true);
+    
+    // swallow the follow-up click so the link doesn't also select the DT row
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.view-info2')) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
   "))
   ),
   id="tabs",

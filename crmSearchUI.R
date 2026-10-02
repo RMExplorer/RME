@@ -1,8 +1,6 @@
 output$crmSearch <- renderUI({
   list(
     tags$div(
-      uiOutput("js_code"),
-      
       #search inputs
       fluidRow(
         column(

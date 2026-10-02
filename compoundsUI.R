@@ -1,8 +1,6 @@
 output$RMESearch <- renderUI({
   list(
     tags$div(
-      uiOutput("js_code2"),
-      
       div(
         uiOutput("searchAnalyte"),
         div(

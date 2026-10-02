@@ -1,31 +1,31 @@
 
-#javascript code to work with crm popup links in the crm search tab
-output$js_code <- renderUI({
-  tags$script(HTML("$(document).on('click', '.view-info', function(e){
-                 e.preventDefault();
-                 var thisClickTime = new Date().getTime();
-                 if (thisClickTime - lastClickTime > 2000) {
-                    var name = $(this).data('name');
-                    Shiny.setInputValue('clicked_name', name, {priority: 'event'});
-                    lastClickTime = thisClickTime;
-                  }
-                });"
-  ))
-})
-
-#javascript code to work with crm popup links in the general search
-output$js_code2 <- renderUI({
-  tags$script(HTML("$(document).on('click', '.view-info2', function(e){
-                 e.preventDefault();
-                 var thisClickTime = new Date().getTime();
-                 if (thisClickTime - lastClickTime > 2000) {
-                    var name = $(this).data('name');
-                    Shiny.setInputValue('clicked_name', name, {priority: 'event'});
-                    lastClickTime = thisClickTime;
-                  }
-                });"
-  ))
-})
+# #javascript code to work with crm popup links in the crm search tab
+# output$js_code <- renderUI({
+#   tags$script(HTML("$(document).on('click', '.view-info', function(e){
+#                  e.preventDefault();
+#                  var thisClickTime = new Date().getTime();
+#                  if (thisClickTime - lastClickTime > 2000) {
+#                     var name = $(this).data('name');
+#                     Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+#                     lastClickTime = thisClickTime;
+#                   }
+#                 });"
+#   ))
+# })
+# 
+# #javascript code to work with crm popup links in the general search
+# output$js_code2 <- renderUI({
+#   tags$script(HTML("$(document).on('click', '.view-info2', function(e){
+#                  e.preventDefault();
+#                  var thisClickTime = new Date().getTime();
+#                  if (thisClickTime - lastClickTime > 2000) {
+#                     var name = $(this).data('name');
+#                     Shiny.setInputValue('clicked_name', name, {priority: 'event'});
+#                     lastClickTime = thisClickTime;
+#                   }
+#                 });"
+#   ))
+# })
 
 # define analyteTable as reactiveVal so that it can change between null and a dataframe
 analyteTable <- reactiveVal(NULL)
