@@ -155,7 +155,7 @@ ui <- navbarPage(
              theme = bs_theme(version = 5, preset = "flatly"),
              div(HTML("<h3>Polarity <i>versus</i> Molecular Weight Plot </h3>"),
                  tooltip_ui("physico_chemical_instructions", 
-                            "Shows all the substamces in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
+                            "Shows all the substances in the Substances table in the General Search tab. To view only certain substances, select them from your table in the General Search tab and filter by 'Only Selected Analytes' in the dropdown below."),
                  style="display:flex;align-items:center;justify-content:center;"),
              div(uiOutput("plotNothingSelected"),                               #in physicoChemicalPlot.R (loaded in server.R)
                  style="display:flex;justify-content:center;font-size:2rem;"),
