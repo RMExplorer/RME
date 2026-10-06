@@ -573,12 +573,55 @@ enrich_compounds <- function(compounds) {
   do.call(rbind, results)
 }
 
+h_new <- function() curl::new_handle(ssl_verifypeer = FALSE)
+
+# Read the key/value header block of a spectral CSV into a named list
+read_header <- function(link, n = 25) {
+  tmp <- tempfile(fileext = ".csv")
+  curl::curl_download(link, tmp, handle = h_new())
+  hdr <- read.csv(tmp, header = FALSE, nrows = n, fill = TRUE,
+                  colClasses = "character", na.strings = character())
+  setNames(trimws(hdr[[2]]), tolower(trimws(hdr[[1]])))
+}
+
+# Helper for harvest_spectral
+get_field <- function(hdr, pattern) {
+  i <- grep(pattern, names(hdr), ignore.case = TRUE)
+  if (length(i)) hdr[[i[1]]] else NA_character_
+}
+
+# Harvest spectral data from atom search feed
+harvest_spectral <- function() {
+  url  <- "https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&y1=&y2=&cn=crm&ps=1000&s=sc&av=1"
+  feed <- read_xml(geturl(url, h_new())) %>% xml_ns_strip()
+  out  <- list()
+  
+  for (e in xml_find_all(feed, "//entry")) {
+    spec <- xml_find_all(e, "./link[contains(@title,'View spectrum')]")
+    if (!length(spec)) next
+    
+    rmid <- sub("^urn:uuid:", "", xml_text(xml_find_first(e, "./id")))
+    
+    for (link in xml_attr(spec, "href")) {
+      hdr <- tryCatch(read_header(link), error = function(err) NULL)
+      if (is.null(hdr)) next
+      out[[length(out) + 1]] <- tibble(
+        rmid     = rmid,
+        name     = get_field(hdr, "^substance"),
+        datatype = get_field(hdr, "type of data"),
+        link     = link
+      )
+    }
+  }
+  bind_rows(out)
+}
+
 
 harvested <- get_oai_records()
 
 referece_materials <- harvested$reference_materials
 analyte_tables <- harvested$analyte_tables
 compounds<- enrich_compounds(harvested$compounds)
-
+spectral_data <- harvest_spectral()
 
 
