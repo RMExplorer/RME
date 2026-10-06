@@ -376,7 +376,7 @@ get_pubchem_properties <- function(name, inchikey) {
   
   data.frame(
     name = name,
-    inchikey = if (!is.null(inchikey) || !is.na(inchikey) && inchikey != "") inchikey else as.character(get_info_value("InChIKey")),
+    inchikey = if (!is.null(inchikey) && !is.na(inchikey) && inchikey != "") inchikey else as.character(get_info_value("InChIKey")),
     cid = as.integer(get_info_value("CID")),
     molecular_formula = as.character(get_info_value("MolecularFormula")),
     molecular_weight = as.numeric(get_info_value("MolecularWeight")),
