@@ -620,7 +620,7 @@ harvest_spectral <- function() {
 
 harvested <- get_oai_records()
 
-referece_materials <- harvested$reference_materials
+reference_materials <- harvested$reference_materials
 analyte_tables <- harvested$analyte_tables
 compounds<- enrich_compounds(harvested$compounds)
 spectral_data <- harvest_spectral()
