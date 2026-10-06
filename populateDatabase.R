@@ -608,6 +608,7 @@ harvest_spectral <- function() {
       out[[length(out) + 1]] <- tibble(
         rmid     = rmid,
         name     = get_field(hdr, "^substance"),
+        inchikey = get_field(hdr, "inchikey"),
         datatype = get_field(hdr, "type of data"),
         link     = link
       )
