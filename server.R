@@ -6,6 +6,8 @@ library(dplyr)
 library(shiny)
 library(shinyWidgets)
 library(DT)
+library(DBI)
+library(RSQLite)
 library(rcdk)
 library(rinchi)
 library(PubChemR)                   #for pubchem

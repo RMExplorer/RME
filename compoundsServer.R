@@ -320,7 +320,7 @@ output$searchAnalyte <- renderUI({
                                                 tooltip_ui("searchTooltip", 
                                                            "Search your Compound, Inchikey, IUPAC, or Keyword in the NRC Repository. If no results are found, will enquire the closest match from PubChem and search the repository again."),
                                                 style="display:flex;"), 
-                 choices = append("", analytes()), 
+                 choices = append("", analytes("nrc_crm.sqlite")), 
                  selected = "", 
                  options = list(create = TRUE, delimiter=';'),
                  width="350px")
