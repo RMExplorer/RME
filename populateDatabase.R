@@ -270,8 +270,8 @@ parse_analyte_xml <- function(url, rmid) {
   
   if (length(compound_rows) == 0) {
     compounds <- data.frame(
-      inchikey = character(),
       name = character(),
+      inchikey = character(),
       stringsAsFactors = FALSE
     )
   } else {
@@ -548,6 +548,7 @@ enrich_compounds <- function(compounds) {
       data.frame(
         name = character(),
         inchikey = character(),
+        cid = numeric(),
         molecular_formula = character(),
         molecular_weight = numeric(),
         smiles = character(),
@@ -622,7 +623,13 @@ harvested <- get_oai_records()
 
 reference_materials <- harvested$reference_materials
 analyte_tables <- harvested$analyte_tables
-compounds<- enrich_compounds(harvested$compounds)
+compounds <- enrich_compounds(harvested$compounds)
 spectral_data <- harvest_spectral()
 
+# save to disk
+saveRDS(list(reference_materials = reference_materials,
+             analyte_tables = analyte_tables,
+             compounds = compounds,
+             spectral_data = spectral_data),
+        "harvest.rds")
 
