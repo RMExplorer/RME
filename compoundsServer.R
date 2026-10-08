@@ -91,6 +91,8 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
         )
         info <- retrieve(object = props, .which = term, .to.data.frame = TRUE)
         
+        synonyms <- get_pubchem_synonyms(info$CID)
+        
         compoundName <- term
         if (isInchikey) {
           compoundName <- tryCatch({
@@ -105,6 +107,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
           molecular_weight = pick(info[["MolecularWeight"]]),
           smiles = pick(info[["SMILES"]]), pKow = -pick(info[["XLogP"]]),
           exact_mass = pick(info[["ExactMass"]]), TPSA = pick(info[["TPSA"]]),
+          synonyms = synonyms,
           stringsAsFactors = FALSE
         )
       }, error = function(e) NULL)
@@ -124,7 +127,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
       net
     }
     
-    # ---- CRM list: from the NRC repository atom search ----
+    # CRM list: from the NRC repository atom search
     searchCrms <- function(term, inchikey) {
       tryCatch({
         q <- gsub(" ", "+", term)
