@@ -113,13 +113,14 @@ observeEvent(input$showSpectrum, {
   )
 })
 
-#min/max mass fraction and mass concentration of the selected compound across the CRMs it appears in
-#(these values are calculated in compoundsServer.R and stored in getTableData$result())
+# min/max mass fraction and mass concentration of the selected compound across the CRMs it appears in
+# (these values are calculated in compoundsServer.R and stored in getTableData$result())
 output$massRange <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
   req(length(getTableData$result()) > 0)
   result <- getTableData$result()
   data <- result %>% slice(input$customTable_rows_selected)
+  req(nrow(data) == 1)
   
   #formats one of the min/max columns, matched by name so the exact unit characters do not matter
   rangeValue <- function(pattern, unit) {
@@ -127,7 +128,7 @@ output$massRange <- renderUI({
     if (length(col) == 0) return("No Results")
     value <- suppressWarnings(as.numeric(data[[col[1]]]))
     #0 is the placeholder used when the compound has no mass fraction/concentration in any CRM
-    if (is.na(value) || value == 0) return("No Results")
+    if (length(value) != 1 || is.na(value) || value == 0) return("No Results")
     paste(format(signif(value, 4), scientific = FALSE, big.mark = ",", trim = TRUE), unit)
   }
   
