@@ -71,9 +71,9 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
       DBI::dbGetQuery(con, "
         SELECT * FROM compounds
         WHERE inchikey = ? COLLATE NOCASE
-           OR name LIKE '%' || ? || '%'
+           OR name LIKE ?
         ORDER BY (LOWER(name) = LOWER(?)) DESC,
-                 (name LIKE '%' || ? || '%') DESC,
+                 (name LIKE ?) DESC,
                  LENGTH(name)
         LIMIT 1", params = as.list(rep(x, 4)))
     }
@@ -222,7 +222,7 @@ analytes <- function(dbPath) {
 #observes for changes in the your table analyte list of all the substances and invokes getTableData when it changes
 observeEvent(yourTableAnalytes(), {
   shinyjs::hide("customTable")
-  getTableData$invoke(yourTableAnalytes(), "nrc_crm.sqlite")
+  getTableData$invoke(yourTableAnalytes(), dbPath)
   shinyjs::show("customTable")
 })
 
@@ -243,41 +243,11 @@ output$searchAnalyte <- renderUI({
                                                 tooltip_ui("searchTooltip", 
                                                            "Search your Compound, Inchikey, IUPAC, or Keyword in the NRC Repository. If no results are found, will enquire the closest match from PubChem and search the repository again."),
                                                 style="display:flex;"), 
-                 choices = append("", analytes("nrc_crm.sqlite")), 
+                 choices = append("", analytes(dbPath)), 
                  selected = "", 
                  options = list(create = TRUE, delimiter=';'),
                  width="350px")
 })
-
-# function that takes in a doi and extracts the mass spectrum file from it
-getCsvFile <- function(id, type) {
-  selectedlink <- paste('https://nrc-digital-repository.canada.ca/eng/view/object/?id=', gsub("urn:uuid:", "", id), sep="")
-  if (!is.null(selectedlink) & length(selectedlink) != 0 & any(grepl("(https?|ftp)://[^ /$.?#].[^\\s]*" , selectedlink))) {
-    #overrides the ssl verifypeer so the webpage can be reached
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
-    htmlOutput <- read_html(geturl(selectedlink, h))
-    rm(h)
-    
-    #gets all the links
-    linksHtml <- htmlOutput %>% xml_find_all(xpath='//a')
-    
-    #find the link containing the text given in the 2nd parameter
-    linkHtml <- linksHtml[grepl(type, xml_text(linksHtml), ignore.case = TRUE)]
-    if (length(linkHtml) > 0){
-      link <- list()
-      for (href in linkHtml){
-        link <- append(xml_attr(href, "href"), link)
-      }
-      
-      #gets the csv file from the url
-      #data <- data.frame(read.csv(url(link), header=F))
-      return(link)
-    } else {
-      return (NULL)
-    }
-  }
-}
 
 #when a row from the table is clicked, gathers all the information necessary for the 'Properties' and 'Spectral Data' page
 observeEvent(input$customTable_rows_selected, {
