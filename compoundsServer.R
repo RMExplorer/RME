@@ -289,109 +289,48 @@ observeEvent(input$customTable_rows_selected, {
     if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) {
       # search by name + inchikey for max coverage
       link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                    gsub(' ','+', row$Name), '+OR+', 
-                    gsub("/", "%2F", gsub(" ", "+", row$InchiKey)), 
+                    gsub(' ','+', row$Name), '+OR+',
+                    gsub("/", "%2F", gsub(" ", "+", row$InchiKey)),
                     '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
     } else {
       # search only by name if inchikey does not exist
       link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                     gsub(' ','+', row$Name), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
     }
-
+    
     #overrides the ssl verifypeer so the webpage can be reached
     h <- curl::new_handle()
     curl::handle_setopt(h, ssl_verifypeer = 0)
     xmlDoc <- read_xml(geturl(link, h))
     rm(h)
-
+    
     d = xml_children(xmlDoc)
-
     df = xml_to_dataframe(d)[-1,-c(1,2)]
-
-    #get all the mass spectrum dataset link
-    entries <- xmlDoc %>% xml_ns_strip() %>% xml_find_all(xpath="//entry")
-    hasData <- c()
-    dataNames <- c()
-    spectralData <- c()
-
-    #for each entry/certificate, add it's id (NA if it doesn't have one) to spectralData
-    for (i in 1:length(entries)){
-      id <- entries[i] %>% xml_find_first(xpath="./id") %>% xml_text()
-      spectralLink <- xml_attr(entries[i] %>% xml_find_all(xpath="./link[contains(@title, 'View spectrum')]"), "href")
-      dataNames <- rbind(dataNames, ifelse(length(spectralLink) > 0, 
-                                           str_split(entries[i] %>% xml_find_first(xpath="./title") %>% xml_text(), ":")[[1]][1], 
-                                           NA))
-      hasData <- rbind(hasData, ifelse(length(spectralLink) > 0, id, NA))
+    
+    # spectral data from the database
+    ik <- if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) trimws(row$InchiKey) else ""
+    
+    con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+    spectra <- tryCatch(
+      DBI::dbGetQuery(con, "
+        SELECT rm.name AS crm, s.name AS substance, s.datatype, s.link
+        FROM spectral_data s
+        JOIN reference_materials rm ON rm.rmid = s.rmid
+        WHERE (? <> '' AND s.inchikey = ? COLLATE NOCASE)
+           OR (LENGTH(TRIM(s.name)) > 0 AND INSTR(LOWER(?), LOWER(TRIM(s.name))) > 0)
+        ORDER BY rm.name, s.datatype",
+                      params = list(ik, ik, row$Name)),
+      finally = DBI::dbDisconnect(con)
+    )
+    
+    spectralData <- if (nrow(spectra) > 0) {
+      data.frame(Name = paste(spectra$crm, spectra$datatype, spectra$substance, sep = ", "),
+                 SpectralLink = spectra$link,
+                 stringsAsFactors = FALSE)
+    } else {
+      data.frame()
     }
-
-    #finds spectral data and adds the link to the list
-    for (i in 1:length(hasData)){
-      if (!is.na(hasData[[i]])) {
-        links <- getCsvFile(hasData[[i]], "full scan MS|fullscan|full scan")
-        if (!is.null(links)) {
-          for (link in links){
-            #read the file from the link to get the data type and the substance name
-            tmpfile <- tempfile(fileext = ".csv")
-            curl::curl_download(link, tmpfile, handle = curl::new_handle(ssl_verifypeer = FALSE))
-            data <- data.frame(read.csv(tmpfile))[1:20,]
-            
-            #check if the inchikey matches (or name), and if it does, add it to the spectral dropdown
-            inchikey <- data[grep("inchikey", data[,1], ignore.case = TRUE), 2]
-            substanceName <- trimws(data[grep("substance", data[,1], ignore.case = TRUE), 2])
-            if (trimws(inchikey) == ifelse(is.null(trimws(row$InchiKey)), trimws(row$InchiKey), "") | grepl(substanceName, row$Name, ignore.case = TRUE)) {
-              dataType <- ifelse(length(data[grep("Type of Data", data[,1], ignore.case = TRUE), 2]) > 0, 
-                                 data[grep("Type of Data", data[,1], ignore.case = TRUE), 2], "mass spectrum")
-              substance <- data[grep("Substance", data[,1], ignore.case = TRUE), 2]
-              spectralData <- rbind(spectralData, c(paste(dataNames[[i]], ", ", dataType, ", ", substance), link))
-            }
-          }
-        }
-        links <- getCsvFile(hasData[[i]], "nmr|1H-NMR")
-        if (!is.null(links)) {
-          for (link in links){
-            #read the file from the link to get the data type and the substance name
-            tmpfile <- tempfile(fileext = ".csv")
-            curl::curl_download(link, tmpfile, handle = curl::new_handle(ssl_verifypeer = FALSE))
-            data <- data.frame(read.csv(tmpfile))[1:20,]
-            
-            #check if the inchikey matches (or name), and if it does, add it to the spectral dropdown
-            inchikey <- data[grep("inchikey", data[,1], ignore.case = TRUE), 2]
-            substanceName <- trimws(data[grep("substance", data[,1], ignore.case = TRUE), 2])
-            if (trimws(inchikey) == ifelse(is.null(trimws(row$InchiKey)), trimws(row$InchiKey), "") | grepl(substanceName, row$Name, ignore.case = TRUE)) {
-              dataType <- ifelse(length(data[grep("Type of Data", data[,1], ignore.case = TRUE), 2]) > 0, 
-                                 data[grep("Type of Data", data[,1], ignore.case = TRUE), 2], "NMR")
-              substance <- data[grep("Substance", data[,1], ignore.case = TRUE), 2]
-              spectralData <- rbind(spectralData, c(paste(dataNames[[i]], ",", paste(dataType), ", ", substance), link))
-            }
-          }
-        }
-        
-        links <- getCsvFile(hasData[[i]], "MS/MS|MSMS")
-        if (!is.null(links)) {
-          for (link in links){
-            #read the file from the link to get the data type and the substance name
-            tmpfile <- tempfile(fileext = ".csv")
-            curl::curl_download(link, tmpfile, handle = curl::new_handle(ssl_verifypeer = FALSE))
-            data <- data.frame(read.csv(tmpfile))[1:20,]
-            
-            #check if the inchikey matches (or name), and if it does, add it to the spectral dropdown
-            inchikey <- data[grep("inchikey", data[,1], ignore.case = TRUE), 2]
-            substanceName <- trimws(data[grep("substance", data[,1], ignore.case = TRUE), 2])
-            if (trimws(inchikey) == ifelse(is.null(trimws(row$InchiKey)), trimws(row$InchiKey), "") | grepl(substanceName, row$Name, ignore.case = TRUE)) {
-              dataType <- ifelse(length(data[grep("Type of Data", data[,1], ignore.case = TRUE), 2]) > 0, 
-                                 data[grep("Type of Data", data[,1], ignore.case = TRUE), 2], "MS/MS")
-              substance <- data[grep("Substance", data[,1], ignore.case = TRUE), 2]
-              spectralData <- rbind(spectralData, c(paste(dataNames[[i]], ", ", dataType, ", ", substance), link))
-            }
-          }
-        }
-      }
-    }
-
-    if (length(spectralData) > 0){
-      colnames(spectralData) <- c("Name", "SpectralLink")
-    }
-  
+    
     #for the selected analyte, save its name crm information in a reactive variable
     df$name = sapply(str_split(df$title,":"), function(x) x[1])
     df = df[!is.na(df$title),]
@@ -399,7 +338,7 @@ observeEvent(input$customTable_rows_selected, {
     crms = sort(df$name)
     names(crms) = crms
     v$crms = crms
-    v$spectralData <- as.data.frame(spectralData)
+    v$spectralData <- spectralData
   }
 })
 

@@ -4,6 +4,8 @@ library(stringr)
 #types of spectrums
 types <- c("NMR", "FSMS", "MSMS")
 
+dbPath <- "nrc_crm.sqlite"
+
 #method to get url content (used to bypass ssl)
 geturl <- function(url, handle) {
   curl::curl_fetch_memory(url, handle = handle)$content  
