@@ -453,46 +453,10 @@ observeEvent(input$unselect, {
 })
 
 observeEvent(input$addallSubstances, {
-  #hdie the table to trigger loading image
+  #hide the table to trigger loading image
   shinyjs::hide("customTable")
   
-  #get all crm ids
-  ids <- recordDF$id
-  allNames <- c()
-  
-  #get the analyte table of all crms
-  for (id in ids) {
-    #use id to get a link to the digital repository entry
-    link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-    
-    #use doi content to get information (the analyte names)
-    #overrides the ssl verifypeer so the webpage can be reached
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
-    ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-    rm(h)
-    
-    #sets analyte table data to null, unless crm contains analyte table
-    analyteTable <- NULL
-    analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
-    
-    if(length(analyte_idx) >= 1){
-      analyteTable <- data.frame(ddf[[analyte_idx[1]]])
-    }
-    
-    if (!is.null(analyteTable)){
-      allNames <- append(analyteTable$Analyte, allNames)
-    }
-  }
-  
   #list of all unique values in the analyte column of the analyte tables
-  allNames <- unique(allNames)
-  
-  #removes any row selection
-  selectRows(proxy = dataTableProxy("customTable", session = session), 
-             selected = NULL)
-  
-  #add the unique susbtances to the yourtableanalytes list
-  newList <- append(allNames, yourTableAnalytes())
+  newList <- analytes("nrc_crm.sqlite")
   yourTableAnalytes(newList)
 })
