@@ -244,17 +244,6 @@ output$information <- renderUI({
   result <- getTableData$result()
   data <- result %>% slice(input$customTable_rows_selected)
   req(data$InchiKey)
-  synonyms <- NA
-  if (!is.na(data$CID)){
-    synonymsLink <- paste("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/", data$CID,"/synonyms/JSON", sep="")
-    synonyms <- tryCatch({
-      fromJSON(synonymsLink)$InformationList$Information$Synonym[[1]]
-    }, error = function(e) {
-      return(NA)
-    })
-    synonyms <- synonyms[c(1:10)]
-    synonyms <- synonyms[!is.na(synonyms)]
-  }
     
   #single labeled field in the info grid, with an optional tooltip icon next to the label
   field <- function(label, value, tooltip_text = NULL, full_width = FALSE) {
@@ -272,8 +261,7 @@ output$information <- renderUI({
   tagList(
     div(
       style = "display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem 1.5rem; padding: 0.5rem 0 1rem 0;",
-      field("Synonyms", ifelse(any(is.na(synonyms)), "No Results", paste(synonyms, collapse=", ")),
-            "Top synonyms for this compound from PubChem", full_width = TRUE),
+      field("Synonyms", ifelse(is.na(data$"Synonyms"), "No Results", data$"Synonyms"), "Top synonyms for this compound from PubChem", full_width = TRUE),
       field("Molecular Formula", ifelse(is.na(data$"Molecular Formula"), "No Results", data$"Molecular Formula")),
       field("Molecular Weight", ifelse(is.na(data$"Molecular Weight"), "No Results", data$"Molecular Weight")),
       field("InchiKey", ifelse(is.na(data$InchiKey), "No Results", data$InchiKey)),

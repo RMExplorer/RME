@@ -190,6 +190,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
           "Maximum Mass Fraction (µg/g)"       = fracRange[2],
           "Minimum Mass Concentration (µg/mL)" = concRange[1],
           "Maximum Mass Concentration (µg/mL)" = concRange[2],
+          "Synonyms"                           = val("synonyms"),
           check.names = FALSE, stringsAsFactors = FALSE
         )
       )
