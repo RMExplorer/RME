@@ -1,3 +1,27 @@
+# runs a query against the DB and returns the result as a dataframe
+dbQuery <- function(sql, params = NULL) {
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  DBI::dbGetQuery(con, sql, params = params)
+}
+
+# builds "?,?,?" for an IN (...) clause with one placeholder per value
+placeholders <- function(x) paste(rep("?", length(x)), collapse = ",")
+
+# choices for the drop downs in the crm search page
+crmChoices <- dbQuery("SELECT name FROM reference_materials
+                       WHERE name IS NOT NULL AND name <> ''
+                       ORDER BY name COLLATE NOCASE")$name
+materialChoices <- dbQuery("SELECT DISTINCT material_type FROM reference_materials
+                            WHERE material_type IS NOT NULL AND material_type <> ''
+                            ORDER BY material_type COLLATE NOCASE")$material_type
+# affiliation is stored as one comma-separated string per crm, so split it into individual affiliates
+affiliateChoices <- dbQuery("SELECT affiliation FROM reference_materials
+                             WHERE affiliation IS NOT NULL AND affiliation <> ''")$affiliation
+affiliateChoices <- trimws(unlist(strsplit(affiliateChoices, ", ", fixed = TRUE)))
+affiliateChoices <- unique(affiliateChoices[nzchar(affiliateChoices)])
+affiliateChoices <- affiliateChoices[order(tolower(affiliateChoices))]
+
 crmList <- reactiveVal(list())
 
 #reactive variable which stores the data frame with all the contents of the data table in the 'crm search' page
@@ -5,59 +29,48 @@ crmTableData <- reactive({
   getCRMData(crmList())
 })
 
-#function that takes the name of a crn and runs it through DR to gather information and return a dataframe
+# function that takes the names of crms and gathers their information from the database
 getCRMData <- function(crm){
   req(length(crmList()) > 0)
   shinyjs::hide("crmTable")
   
-  #recordDF is calculated in global.R
-  data <- recordDF[recordDF$crm %in% crm,]
-  ids <- data$id
-  formats <- c()
-  for (id in ids){
-    link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-    
-    #overrides the ssl verifypeer so the webpage can be reached
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
-    ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-    rm(h)
-    req(ddf)
-    table <- as.data.frame(ddf[[1]])
-    format <- table[table$X1 == "Format", "X2"]
-    formats <- append(formats, format)
-  }
+  # crmList() can be a mix of lists and vectors, so flatten it
+  crm <- unique(as.character(unlist(crm)))
   
-  nameHTML <- c()
-  for (name in data$crm) {
-    nameHTML <- append(nameHTML, HTML(paste0(
-      "<a href=\"#\" class=\"view-info\" data-name=", name,">", name, "</a>",sep="")))
-  }
+  data <- dbQuery(paste0("
+    SELECT rmid, name, affiliation, material_type
+    FROM reference_materials
+    WHERE name IN (", placeholders(crm), ")
+    ORDER BY name COLLATE NOCASE"), as.list(crm))
   
-  data <- data.frame("ID" = ids, "CRM" = data$crm, "Name" = nameHTML, 
-                     "Affiliates" = data$affiliation, "Format" = formats, "Material Type" = data$materialType)
+  # link that opens the crm's info modal (sprintf returns character(0) when there are no rows)
+  nameHTML <- sprintf('<a href="#" class="view-info" data-name="%s">%s</a>', data$name, data$name)
+  
+  data <- data.frame("ID" = data$rmid, "CRM" = data$name, "Name" = nameHTML, 
+                     "Affiliates" = data$affiliation, "Material Type" = data$material_type,
+                     check.names = FALSE, stringsAsFactors = FALSE)
   shinyjs::show("crmTable")
   return(data)
 }
 
 output$searchCRM <- renderUI({
   selectizeInput(inputId = "selectCRM", label = div(
-                                          style = "display: flex; align-items: center; gap: 6px;",
-                                          span("Search for a CRM"),
-                                          tooltip_ui(
-                                            "crmsearchTooltip",
-                                            "CRMs related to your search will also be added."
-                                          )
-                                        ),
-                 choices = c("", allCrms), 
-                 selected = NULL, 
-                 width="100%")
+    style = "display: flex; align-items: center; gap: 6px;",
+    span("Search for a CRM"),
+    tooltip_ui(
+      "crmsearchTooltip",
+      "CRMs related to your search will also be added."
+    )
+  ),
+  choices = c("", crmChoices), 
+  selected = NULL, 
+  width="100%")
 })
 
 #when a new crm is selected, add it to the table list
 observeEvent(input$selectCRM, {
   req(input$selectCRM)
-  #will search the repository with the name/inchikey the analyte was searched with
+  
   link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
                 gsub(' ','+', input$selectCRM), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
   
@@ -67,7 +80,7 @@ observeEvent(input$selectCRM, {
   d = read_html(geturl(link, h))
   rm(h)
   req(d)
-
+  
   titles <- d %>% xml_find_all(xpath="//title") %>% xml_text()
   crms <- sapply(str_split(titles,":"), function(x) x[1])
   crms <- crms[crms != "NRC Digital Repository"]
@@ -78,7 +91,7 @@ observeEvent(input$selectCRM, {
   
   #refresh the select input so it doesnt show previous selection in the box
   updateSelectizeInput(session, inputId = "selectCRM", "Search for a CRM", 
-                       choices = c("", allCrms),
+                       choices = c("", crmChoices),
                        selected = NULL)
 })
 
@@ -86,39 +99,40 @@ observeEvent(input$selectCRM, {
 output$searchAffiliate <- renderUI({
   #affiliates is calculated in global.R
   selectizeInput(inputId = "selectedAffiliate", "Select an Affiliate", 
-                 choices = append("", affiliates), selected = NULL, width="100%")
+                 choices = append("", affiliateChoices), selected = NULL, width="100%")
 })
 
 #the 'Select material type' drop down in the 'crm search' page
 output$searchMaterial <- renderUI({
-  #materials is calculated in global.R
   selectizeInput(inputId = "selectedMaterial", "Select a Material Type", 
-                 choices = append("", materials), selected = NULL, width="100%")
+                 choices = append("", materialChoices), selected = NULL, width="100%")
 })
 
 #when a new affiliate is selected, add it to the table list
 observeEvent(input$selectedAffiliate, {
   req(input$selectedAffiliate)
-  crms <- recordDF[grepl(input$selectedAffiliate, recordDF$affiliation), "crm"]
+  crms <- dbQuery("SELECT name FROM reference_materials WHERE INSTR(affiliation, ?) > 0",
+                  list(input$selectedAffiliate))$name
   crms <- crms[!crms %in% crmList()]
   newList <- append(crms, crmList())
   crmList(newList)
   
   #refresh the select input so it doesnt show previous selection in the box
   updateSelectizeInput(session, inputId = "selectedAffiliate", label = "Select an Affiliate",
-                       choices = append("", affiliates),
+                       choices = append("", affiliateChoices),
                        selected = NULL)
 })
 
-#when a new affiliate is selected, add it to the table list
+# when a new material type is selected, replace the table list with the crms of that type
 observeEvent(input$selectedMaterial, {
   req(input$selectedMaterial)
-  crms <- recordDF[grepl(input$selectedMaterial, recordDF$materialType), "crm"]
+  crms <- dbQuery("SELECT name FROM reference_materials WHERE INSTR(material_type, ?) > 0",
+                  list(input$selectedMaterial))$name
   crmList(crms)
   
   #refresh the select input so it doesnt show previous selection in the box
   updateSelectizeInput(session, inputId = "selectedMaterial", label = "Select a Material Type",
-                       choices = append("", materials),
+                       choices = append("", materialChoices),
                        selected = NULL)
 })
 
@@ -144,7 +158,6 @@ output$crmTable <- renderDT({
   if (length(crmList()) == 0) {
     emptyData <- data.frame("Name" = character(0),
                             "Affiliates" = character(0),
-                            "Format" = character(0),
                             "Material Type" = character(0),
                             check.names = FALSE)
     return(datatable(emptyData, 
@@ -155,8 +168,7 @@ output$crmTable <- renderDT({
   }
   req(length(crmTableData()) > 0)
   data <- crmTableData()
-  colnames(data) <- c("id", "CRM", "Name", "Affiliates", "Format", "Material Type")
-  datatable(data[, c("Name", "Affiliates", "Format", "Material Type")], 
+  datatable(data[, c("Name", "Affiliates", "Material Type")], 
             options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip',
                            # truncate long Affiliates values. Clicking "more"/"less" expands or collapses
                            # the cell (handled by the .cell-toggle click handler in ui.R)
@@ -182,7 +194,7 @@ output$crmTable <- renderDT({
 #button to add all crms to the table
 observeEvent(input$addAllCRMs, {
   req(input$addAllCRMs)
-  crms <- recordDF$crm
+  crms <- crmChoices
   crms <- crms[!crms %in% crmList()]
   newList <- append(crms, crmList())
   crmList(newList)
@@ -192,33 +204,17 @@ observeEvent(input$addAllCRMs, {
 observeEvent(input$addCRM, {
   req(input$crmTable_rows_selected)
   
-  #switch the sidebar accordion over to the compound search
+  # switch the sidebar accordion over to the compound search
   accordion_panel_open("searchAccordion", "compound")
   accordion_panel_close("searchAccordion", "crm")
   
   selected <- crmTableData() %>% slice(input$crmTable_rows_selected)
-  #"<a href=\"#\" class=\"view-info\" data-name=", name,">", name, "</a>"
   ids <- selected$ID
-  namesToAdd <- c()
   
-  #overrides the ssl verifypeer so the webpage can be reached
-  h <- curl::new_handle()
-  curl::handle_setopt(h, ssl_verifypeer = 0)
-  for (id in ids){
-    link <- paste("https://nrc-digital-repository.canada.ca/eng/view/object/?id=", id, sep="")
-    
-    ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-    req(ddf)
-    
-    analyte_idx <- which(sapply(ddf, function(tbl) "Analyte"%in% names(tbl)))
-    if(length(analyte_idx) >= 1){
-      analyteTable <- data.frame(ddf[[analyte_idx[1]]])
-      namesToAdd <- append(analyteTable$Analyte, namesToAdd)
-    }
-  }
-  rm(h)
+  # every analyte listed in the analyte tables of the selected crms
+  namesToAdd <- dbQuery(paste0("SELECT DISTINCT name FROM analyte_tables WHERE rmid IN (",
+                               placeholders(ids), ")"), as.list(ids))$name
   
-  namesToAdd <- unique(namesToAdd)
   namesToAdd <- namesToAdd[!namesToAdd %in% yourTableAnalytes()]
   newList <- append(namesToAdd, yourTableAnalytes())
   yourTableAnalytes(newList)
