@@ -1,51 +1,8 @@
-#function to convert xml to dataframe (Juris function)
-xml_to_dataframe <- function(nodeset){
-  if(class(nodeset) != 'xml_nodeset'){ stop('Input should be "xml_nodeset" class') }
-  lst <- lapply(nodeset, function(x){
-    tmp <- xml2::xml_text(xml2::xml_children(x))
-    names(tmp) <- xml2::xml_name(xml2::xml_children(x))
-    return(as.list(tmp))
-  })
-  result <- do.call(plyr::rbind.fill, lapply(lst, function(x)
-    as.data.frame(x, stringsAsFactors = F)))
-  return(tibble::as_tibble(result))
-}
-
-#overrides the ssl verifypeer so the webpage can be reached
-h <- curl::new_handle()
-curl::handle_setopt(h, ssl_verifypeer = 0)
-tryCatch({
-  d = xml_children(read_xml(geturl('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1', h)))
-},
-error = function(cond) {
-  message(conditionMessage(cond))
-  output$urlerror <- renderText({
-    "We are currently unable to access the nrc digital repository"
-  })
-  NA
-},
-warning = function(cond) {
-  message(conditionMessage(cond))
-  output$urlerror <- renderText({
-    "We are currently unable to access the nrc digital repository"
-  })
-  NULL
-})
-
-rm(h)
-
-nrc_dr_all = xml_to_dataframe(d)[-1,-c(1,2)]
-nrc_dr_all$name = sapply(str_split(nrc_dr_all$title,":"), function(x) x[1])
-nrc_dr_all = nrc_dr_all[!is.na(nrc_dr_all$title),]
-
-crms = sort(nrc_dr_all$name)
-names(crms) = crms
-
-
 getTableData <- ExtendedTask$new(function(compounds, dbPath) {
   future_promise({
+    # connect to database
     con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
-    on.exit(DBI::dbDisconnect(con), add = TRUE)
+    on.exit(DBI::dbDisconnect(con), add = TRUE) # close connection when function returns
     
     # helper functions:
     fracFactor <- c("mg/g" = 1000, "µg/kg" = 1/1000, "g/g" = 1e6, "pg/g" = 1e-6,
@@ -187,7 +144,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
   }, seed = TRUE)
 })
 
-#the analytes shown in the select analyte drop down menu
+# the analytes shown in the select analyte drop down menu
 analytes <- function(dbPath) {
   con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
   on.exit(DBI::dbDisconnect(con), add = TRUE)
@@ -202,15 +159,17 @@ observeEvent(yourTableAnalytes(), {
   shinyjs::show("customTable")
 })
 
-#stores the info for the selected row
-v <- reactiveValues('data' = nrc_dr_all, 
-                    'crms' = crms, 'doi' = NULL, 
-                    'abstract' = NULL, 
-                    'date' = NULL, 
-                    'table' = NULL, 
-                    spectralData = NULL)
+# stores the info for the selected row
+v <- reactiveValues(
+  data = data.frame(name = character(), title = character(), summary = character(),
+                    id = character(), doi = character(), date = character(),
+                    stringsAsFactors = FALSE),
+  crms = character(),
+  doi = NULL, abstract = NULL, date = NULL, table = NULL,
+  spectralData = NULL
+)
 
-#change this with google sheets data for the logged in user
+# contains list of compounds currently in the table
 yourTableAnalytes <- reactiveVal(list())
 
 #the 'Select an Analyte' drop down in the 'Substances' page which also allows users to enter their own analyte names
@@ -324,9 +283,9 @@ observeEvent(input$removeAllAnalytes, {
   yourTableAnalytes(newList)
 })
 
-#when the 'Save All Rows...' button is clicked and user is logged in, saves all the names from the reactive variable yourTableAnalytes to mongodb
+# when the 'Save Table' button is clicked, show modal to download compounds in the table
 observeEvent(input$saveAnalytes, {
-  #modal asking user to name/reuse a name for their saved table
+  # modal with download button
   showModal(
     modalDialog(
       title = "Save Your Table",
@@ -337,7 +296,7 @@ observeEvent(input$saveAnalytes, {
   )
 })
 
-#saves the choosen in mongodb
+# saves all the names from yourTableAnalytes in a csv file
 output$downloadSavedSubstances <- downloadHandler(
   filename = function() {
     paste("yourCompounds.csv")
@@ -347,7 +306,7 @@ output$downloadSavedSubstances <- downloadHandler(
   }
 )
 
-#when the 'Load All Rows...' button is clicked and user is logged in, loads all the names to the reactive variable yourTableAnalytes from mongodb
+# when the 'Load Table' button is clicked, show modal that asks user to upload a csv file containing compound names
 observeEvent(input$loadAnalytes, {
   showModal(
     modalDialog(
@@ -360,7 +319,7 @@ observeEvent(input$loadAnalytes, {
 })
 
 
-#loads the choosen table from mongodb when the load button is clicked
+# loads the saved compounds from the user-uploaded csv file
 observeEvent(input$uploadSubstances, {
   if (length(input$uploadSubstances) > 0) {
     data <- read.csv(input$uploadSubstances$datapath, header = TRUE)$x
@@ -428,6 +387,6 @@ observeEvent(input$addallSubstances, {
   shinyjs::hide("customTable")
   
   #list of all unique values in the analyte column of the analyte tables
-  newList <- analytes("nrc_crm.sqlite")
+  newList <- analytes(dbPath)
   yourTableAnalytes(newList)
 })
