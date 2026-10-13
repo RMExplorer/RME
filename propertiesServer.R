@@ -2,7 +2,7 @@
 output$propertiesNothingSelected <- renderUI({
   req(length(input$customTable_rows_selected) != 1)
   HTML(paste(
-    "<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab to view it's properties.</p>"
+    "<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab to view its properties.</p>"
   ))
 })
 
