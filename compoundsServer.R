@@ -47,10 +47,6 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
     con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
     on.exit(DBI::dbDisconnect(con), add = TRUE)
     
-    # overrides the ssl verifypeer so the webpage can be reached on shinyapps
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
-    
     # helper functions:
     fracFactor <- c("mg/g" = 1000, "µg/kg" = 1/1000, "g/g" = 1e6, "pg/g" = 1e-6,
                     "ng/g" = 1/1000, "kg/kg" = 1e6, "g/kg" = 1000)
@@ -71,9 +67,9 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
       DBI::dbGetQuery(con, "
         SELECT * FROM compounds
         WHERE inchikey = ? COLLATE NOCASE
-           OR name LIKE ?
+           OR name = ? COLLATE NOCASE
         ORDER BY (LOWER(name) = LOWER(?)) DESC,
-                 (name LIKE ?) DESC,
+                 (name = ? COLLATE NOCASE) DESC,
                  LENGTH(name)
         LIMIT 1", params = as.list(rep(x, 4)))
     }
@@ -91,23 +87,20 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
         )
         info <- retrieve(object = props, .which = term, .to.data.frame = TRUE)
         
-        synonyms <- get_pubchem_synonyms(info$CID)
-        
+        cid          <- pick(info[["CID"]])
+        synonyms     <- get_pubchem_synonyms(cid)
         compoundName <- term
-        if (isInchikey) {
-          compoundName <- tryCatch({
-            syn <- get_synonyms(identifier = info$CID, namespace = "cid")
-            synonyms(syn)$Synonyms[1]
-          }, error = function(e) term)
-        }
+        if (isInchikey && !is.na(synonyms)) compoundName <- strsplit(synonyms, "; ")[[1]][1]
+        crms         <- get_compound_crms(compoundName, pick(info[["InChIKey"]]))
         
         data.frame(
-          name = compoundName, cid = pick(info[["CID"]]), inchikey = pick(info[["InChIKey"]]),
+          name = compoundName, cid = cid, inchikey = pick(info[["InChIKey"]]),
           molecular_formula = pick(info[["MolecularFormula"]]),
           molecular_weight = pick(info[["MolecularWeight"]]),
           smiles = pick(info[["SMILES"]]), pKow = -pick(info[["XLogP"]]),
           exact_mass = pick(info[["ExactMass"]]), TPSA = pick(info[["TPSA"]]),
           synonyms = synonyms,
+          crms = crms,
           stringsAsFactors = FALSE
         )
       }, error = function(e) NULL)
@@ -127,27 +120,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
       net
     }
     
-    # CRM list: from the NRC repository atom search
-    searchCrms <- function(term, inchikey) {
-      tryCatch({
-        q <- gsub(" ", "+", term)
-        if (!is.na(inchikey)) {
-          link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
-                         '+OR+', gsub("/", "%2F", gsub(" ", "+", inchikey)),
-                         '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-        } else {
-          link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
-                         '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-        }
-        d  <- xml_children(read_xml(geturl(link, h)))
-        df <- xml_to_dataframe(d)[-1, -c(1, 2)]
-        df <- df[!is.na(df$title), ]
-        crms <- sort(sapply(str_split(df$title, ":"), function(x) x[1]))
-        crms[crms != "No results"]
-      }, error = function(e) character())
-    }
-    
-    # measurements for one compound from the database, limited to the CRMs the atom search returned
+    # measurements for one compound from the database
     getMeasurements <- function(compoundName, crms) {
       if (is.na(compoundName) || length(crms) == 0) return(emptyAm)
       am <- DBI::dbGetQuery(con, "
@@ -165,7 +138,11 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
       val  <- function(col) if (is.null(comp)) NA else pick(comp[[col]])
       searchName <- if (is.null(comp)) term else comp$name[1]
       
-      crms <- searchCrms(term, val("inchikey"))
+      crms <- character()
+      rawCrms <- val("crms")
+      if (!is.na(rawCrms) && nzchar(rawCrms)) {
+        crms <- unique(trimws(strsplit(rawCrms, ",")[[1]]))
+      }
       am   <- getMeasurements(searchName, crms)
       
       frac <- am[grepl("mass fraction", am$quantity, ignore.case = TRUE), ]

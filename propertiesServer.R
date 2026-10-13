@@ -261,7 +261,7 @@ output$information <- renderUI({
   tagList(
     div(
       style = "display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem 1.5rem; padding: 0.5rem 0 1rem 0;",
-      field("Synonyms", ifelse(is.na(data$"Synonyms"), "No Results", data$"Synonyms"), "Top synonyms for this compound from PubChem", full_width = TRUE),
+      field("Synonyms", ifelse(is.na(data$"Synonyms"), "No Results", data$"Synonyms"), "Top 10 synonyms for this compound from PubChem", full_width = TRUE),
       field("Molecular Formula", ifelse(is.na(data$"Molecular Formula"), "No Results", data$"Molecular Formula")),
       field("Molecular Weight", ifelse(is.na(data$"Molecular Weight"), "No Results", data$"Molecular Weight")),
       field("InchiKey", ifelse(is.na(data$InchiKey), "No Results", data$InchiKey)),

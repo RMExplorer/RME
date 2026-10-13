@@ -4,17 +4,9 @@ library(dplyr)
 
 harvest <- readRDS("harvest.rds")
 
-# remove duplicate and null primary keys
-harvest$analyte_tables <- harvest$analyte_tables |> 
-  filter(!is.na(name), !is.na(quantity)) |>
-  distinct(rmid, name, quantity, .keep_all = TRUE)
-harvest$spectral_data <- harvest$spectral_data |> 
-  filter(!is.na(name), !is.na(datatype)) |>
-  distinct(rmid, name, datatype, .keep_all = TRUE)
-
 list2env(harvest, environment()) # recreates the four data frames
 
-if (file.exists("nrc_crm.sqlite")) file.remove("nrc_crm.sqlite") # clean rebuild
+unlink("nrc_crm.sqlite")   # start clean so schema changes take effect
 
 # create / connect to the database
 con <- dbConnect(RSQLite::SQLite(), "nrc_crm.sqlite")
@@ -44,7 +36,8 @@ CREATE TABLE IF NOT EXISTS compounds (
   pKow              REAL,
   exact_mass        REAL,
   TPSA              REAL,
-  synonyms          TEXT
+  synonyms          TEXT,
+  crms              TEXT
 )")
 
 dbExecute(con, "
@@ -82,7 +75,5 @@ dbWithTransaction(con, {
 
 # verify
 dbListTables(con)
-dbGetQuery(con, "SELECT COUNT(*) AS n FROM compounds")
-dbGetQuery(con, "SELECT * FROM compounds LIMIT 5")
 
 dbDisconnect(con)
