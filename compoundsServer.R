@@ -232,30 +232,8 @@ observeEvent(input$customTable_rows_selected, {
     result <- getTableData$result()
     row = result %>% slice(input$customTable_rows_selected)
     
-    if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) {
-      # search by name + inchikey for max coverage
-      link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                    gsub(' ','+', row$Name), '+OR+',
-                    gsub("/", "%2F", gsub(" ", "+", row$InchiKey)),
-                    '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-    } else {
-      # search only by name if inchikey does not exist
-      link = paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=',
-                    gsub(' ','+', row$Name), '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-    }
-    
-    #overrides the ssl verifypeer so the webpage can be reached
-    h <- curl::new_handle()
-    curl::handle_setopt(h, ssl_verifypeer = 0)
-    xmlDoc <- read_xml(geturl(link, h))
-    rm(h)
-    
-    d = xml_children(xmlDoc)
-    df = xml_to_dataframe(d)[-1,-c(1,2)]
-    
     # spectral data from the database
     ik <- if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) trimws(row$InchiKey) else ""
-    
     con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
     spectra <- tryCatch(
       DBI::dbGetQuery(con, "
@@ -277,13 +255,30 @@ observeEvent(input$customTable_rows_selected, {
       data.frame()
     }
     
-    #for the selected analyte, save its name crm information in a reactive variable
-    df$name = sapply(str_split(df$title,":"), function(x) x[1])
-    df = df[!is.na(df$title),]
-    v$data = df
-    crms = sort(df$name)
-    names(crms) = crms
-    v$crms = crms
+    # CRM info from the database, using the CRMs already attached to this compound
+    crmNames <- if (!is.na(row$CRMs) && nzchar(row$CRMs)) {
+      unique(trimws(strsplit(row$CRMs, ",")[[1]]))
+    } else character()
+    
+    if (length(crmNames) > 0) {
+      con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+      df <- tryCatch(
+        DBI::dbGetQuery(con, paste0(
+          "SELECT rmid AS id, name, title, summary, doi, date
+       FROM reference_materials
+       WHERE name IN (", paste(rep("?", length(crmNames)), collapse = ","), ")
+       ORDER BY name"), params = as.list(crmNames)),
+        finally = DBI::dbDisconnect(con)
+      )
+      crms <- df$name
+      names(crms) <- crms
+      v$data <- df
+      v$crms <- crms
+    } else {
+      v$data <- data.frame(name = "No results", title = "No results", summary = "",
+                           id = "", doi = "", date = "", stringsAsFactors = FALSE)
+      v$crms <- c("No results" = "No results")
+    }
     v$spectralData <- spectralData
   }
 })
