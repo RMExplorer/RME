@@ -99,7 +99,6 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
           molecular_weight = pick(info[["MolecularWeight"]]),
           smiles = pick(info[["SMILES"]]), pKow = -pick(info[["XLogP"]]),
           exact_mass = pick(info[["ExactMass"]]), TPSA = pick(info[["TPSA"]]),
-          synonyms = synonyms,
           crms = crms,
           stringsAsFactors = FALSE
         )
@@ -167,7 +166,6 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
           "Maximum Mass Fraction (µg/g)"       = fracRange[2],
           "Minimum Mass Concentration (µg/mL)" = concRange[1],
           "Maximum Mass Concentration (µg/mL)" = concRange[2],
-          "Synonyms"                           = val("synonyms"),
           check.names = FALSE, stringsAsFactors = FALSE
         )
       )

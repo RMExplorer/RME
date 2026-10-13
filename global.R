@@ -11,6 +11,23 @@ geturl <- function(url, handle) {
   curl::curl_fetch_memory(url, handle = handle)$content  
 }
 
+# Get PubChem synonyms for one compound
+get_pubchem_synonyms <- function(cid, n = 10, sep = "; ") {
+  if (length(cid) == 0 || is.na(cid[1])) return(NA_character_)
+  cid <- cid[1]
+  values <- tryCatch({
+    syn <- get_synonyms(identifier = cid, namespace = "cid")
+    synonyms(syn)$Synonyms
+  }, error = function(e) {
+    warning("Synonym lookup failed for CID ", cid, ": ", conditionMessage(e))
+    NULL
+  })
+  
+  if (is.null(values) || length(values) == 0) return(NA_character_)
+  
+  paste(head(values, n), collapse = sep)
+}
+
 ########### START OF GETTING ALL OAI AFFILIATE INFO ###########
 #### Get all crms from oai ######
 link <-"https://oai-pmh.nrc-cnrc.gc.ca/dr-dn?verb=ListRecords&metadataPrefix=oai_openaire&set=crm"

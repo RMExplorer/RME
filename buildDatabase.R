@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS compounds (
   pKow              REAL,
   exact_mass        REAL,
   TPSA              REAL,
-  synonyms          TEXT,
   crms              TEXT
 )")
 

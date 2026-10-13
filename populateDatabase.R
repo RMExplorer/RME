@@ -408,23 +408,6 @@ get_pubchem_properties <- function(name, inchikey) {
   )
 }
 
-# Get PubChem synonyms for one compound
-get_pubchem_synonyms <- function(cid, n = 10, sep = "; ") {
-  if (length(cid) == 0 || is.na(cid[1])) return(NA_character_)
-  cid <- cid[1]
-  values <- tryCatch({
-    syn <- get_synonyms(identifier = cid, namespace = "cid")
-    synonyms(syn)$Synonyms
-  }, error = function(e) {
-    warning("Synonym lookup failed for CID ", cid, ": ", conditionMessage(e))
-    NULL
-  })
-  
-  if (is.null(values) || length(values) == 0) return(NA_character_)
-  
-  paste(head(values, n), collapse = sep)
-}
-
 # Returns crms that feature a given compound
 get_compound_crms <- function(term, inchikey) {
   tryCatch({
@@ -603,7 +586,6 @@ enrich_compounds <- function(compounds) {
         pKow = numeric(),
         exact_mass = numeric(),
         TPSA = numeric(),
-        synonyms = character(),
         crms = character(),
         stringsAsFactors = FALSE
       )
@@ -616,9 +598,6 @@ enrich_compounds <- function(compounds) {
       inchikey = compounds$inchikey[i]
     )
     Sys.sleep(0.5) # throttle pubchem requests
-    # separate call for synonyms
-    row$synonyms <- get_pubchem_synonyms(row$cid)
-    Sys.sleep(0.5)
     row$crms <- get_compound_crms(row$name, row$inchikey)
     row
   })
