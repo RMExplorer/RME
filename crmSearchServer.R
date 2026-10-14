@@ -44,7 +44,9 @@ getCRMData <- function(crm){
     ORDER BY name COLLATE NOCASE"), as.list(crm))
   
   # link that opens the crm's info modal (sprintf returns character(0) when there are no rows)
-  nameHTML <- sprintf('<a href="#" class="view-info" data-name="%s">%s</a>', data$name, data$name)
+  nameHTML <- sprintf('<a href="#" class="view-info" data-name="%s">%s</a>',
+                      htmltools::htmlEscape(data$name, attribute = TRUE),
+                      htmltools::htmlEscape(data$name))
   
   data <- data.frame("ID" = data$rmid, "CRM" = data$name, "Name" = nameHTML, 
                      "Affiliates" = data$affiliation, "Material Type" = data$material_type,
@@ -97,7 +99,7 @@ observeEvent(input$selectCRM, {
 
 #the 'Select an Affiliate' drop down in the 'crm search' page
 output$searchAffiliate <- renderUI({
-  #affiliates is calculated in global.R
+  # affiliateChoices is built from the database at the top of this file
   selectizeInput(inputId = "selectedAffiliate", "Select an Affiliate", 
                  choices = append("", affiliateChoices), selected = NULL, width="100%")
 })
