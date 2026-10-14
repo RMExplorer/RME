@@ -431,17 +431,18 @@ get_compound_crms <- function(term, inchikey) {
 
 # Harvest all NRC CRM records
 # Returns: reference_materials, analyte_tables, compounds
-get_oai_records <- function(base_url = OAI_BASE_URL, metadata_prefix = "oai_openaire", set = "crm") {
+get_oai_records <- function(base_url = OAI_BASE_URL, metadata_prefix = "oai_openaire", set = "crm", from = NULL) {
   reference_materials <- list()
   analyte_tables <- list()
   compounds <- list()
   
-  # first request
+  # first request; `from` (YYYY-MM-DD) limits it to records added/changed since that date; NULL harvests everything
   response <- request(base_url) |>
     req_url_query(
       verb = "ListRecords",
       metadataPrefix = metadata_prefix,
-      set = set
+      set = set,
+      from = from
     ) |> req_perform()
   
   xml <- resp_body_xml(response)
@@ -449,6 +450,11 @@ get_oai_records <- function(base_url = OAI_BASE_URL, metadata_prefix = "oai_open
   
   # process pages
   repeat {
+    
+    err <- xml_find_first(xml, ".//oai:error", OAI_NS)
+    if (length(err) > 0 && xml_attr(err, "code") != "noRecordsMatch") {   # "noRecordsMatch" means nothing changed: fall through with no records
+      stop("OAI-PMH error ", xml_attr(err, "code"), ": ", xml_text(err))
+    }
     
     records <- xml_find_all(
       xml,
@@ -622,7 +628,7 @@ get_field <- function(hdr, pattern) {
 }
 
 # Harvest spectral data from atom search feed
-harvest_spectral <- function() {
+harvest_spectral <- function(known_links = character()) {
   url  <- "https://nrc-digital-repository.canada.ca/eng/search/atom/?q=*&q=&y1=&y2=&cn=crm&ps=1000&s=sc&av=1"
   feed <- read_xml(geturl(url, h_new())) %>% xml_ns_strip()
   out  <- list()
@@ -634,6 +640,7 @@ harvest_spectral <- function() {
     rmid <- sub("^urn:uuid:", "", xml_text(xml_find_first(e, "./id")))
     
     for (link in xml_attr(spec, "href")) {
+      if (link %in% known_links) next  # already in the database
       hdr <- tryCatch(read_header(link), error = function(err) NULL)
       if (is.null(hdr)) next
       
@@ -669,16 +676,71 @@ harvest_spectral <- function() {
 }
 
 
-harvested <- get_oai_records()
+# Re-fetch only the crms column for compounds that are already stored
+# (a new CRM can feature an existing compound, which makes its crms stale)
+refresh_crms <- function(known_compounds) {
+  if (nrow(known_compounds) == 0) {
+    return(data.frame(name = character(), crms = character(), stringsAsFactors = FALSE))
+  }
+  crms <- vapply(seq_len(nrow(known_compounds)), function(i) {
+    get_compound_crms(known_compounds$name[i], known_compounds$inchikey[i])
+  }, character(1))
+  data.frame(name = known_compounds$name, crms = crms, stringsAsFactors = FALSE)
+}
+
+
+# find what the existing database contains
+DB_PATH <- "nrc_crm.sqlite"
+FULL_REFRESH <- FALSE   # TRUE = ignore the database and re-harvest everything
+
+harvest_started <- format(Sys.time(), "%Y-%m-%d", tz = "UTC")  # OAI datestamps are UTC
+
+last_harvest    <- NULL
+known_compounds <- data.frame(name = character(), inchikey = character(), stringsAsFactors = FALSE)
+known_links     <- character()
+
+if (!FULL_REFRESH && file.exists(DB_PATH)) {
+  con <- dbConnect(RSQLite::SQLite(), DB_PATH)
+  
+  if (dbExistsTable(con, "meta")) {
+    lh <- dbGetQuery(con, "SELECT value FROM meta WHERE key = 'last_harvest'")$value
+    if (length(lh) == 1) last_harvest <- lh
+  }
+  if (dbExistsTable(con, "compounds")) {
+    known_compounds <- dbGetQuery(con, "SELECT name, inchikey FROM compounds")
+  }
+  if (dbExistsTable(con, "spectral_data")) {
+    known_links <- dbGetQuery(con, "SELECT link FROM spectral_data")$link
+  }
+  dbDisconnect(con)
+}
+
+message(if (is.null(last_harvest)) "Full harvest" else paste("Incremental harvest since", last_harvest))
+
+
+# harvest
+harvested <- get_oai_records(from = last_harvest)
 
 reference_materials <- harvested$reference_materials
 analyte_tables <- distinct(harvested$analyte_tables)
-compounds <- enrich_compounds(harvested$compounds)
-spectral_data <- harvest_spectral()
 
-# save to disk
+# new compounds get the full PubChem enrichment; compounds we already have
+# only get their crms refreshed, and only if they appear in a re-harvested record
+harvested_compounds <- harvested$compounds
+new_compounds <- harvested_compounds[!harvested_compounds$name %in% known_compounds$name, , drop = FALSE]
+old_compounds <- known_compounds[known_compounds$name %in% harvested_compounds$name, , drop = FALSE]
+
+compounds <- bind_rows(
+  enrich_compounds(new_compounds),
+  refresh_crms(old_compounds)
+)
+
+spectral_data <- harvest_spectral(known_links)
+
+# save the new/changed rows for buildDatabase.R
 saveRDS(list(reference_materials = reference_materials,
              analyte_tables = analyte_tables,
              compounds = compounds,
-             spectral_data = spectral_data),
+             spectral_data = spectral_data,
+             harvest_started = harvest_started),
         "harvest.rds")
