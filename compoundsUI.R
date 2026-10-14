@@ -42,7 +42,6 @@ output$RMESearch <- renderUI({
       div(
         h6("Your compound table", style = "margin:0;font-weight:bold;"),
         div(
-          actionButton("unselect", "Unselect All Rows", class="btn-outline-warning btn-sm"),
           actionButton("removeAnalyte", "Remove Selected", class="btn-outline-danger btn-sm"),
           actionButton("removeAllAnalytes", "Clear All", class="btn-danger btn-sm"),
           style = "display:flex;gap:8px;"

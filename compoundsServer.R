@@ -370,15 +370,9 @@ output$customTable <- renderDT({
                         )
   }
   
-  datatable(data, 
+  datatable(data, selection = "single",
             options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'), 
             filter= list(position='top', clear = FALSE), escape = FALSE, rownames = FALSE)
-})
-
-#unselect all rows in the custom table when unselect button is clicked
-observeEvent(input$unselect, {
-  selectRows(proxy = dataTableProxy("customTable", session = session), 
-             selected = NULL)
 })
 
 observeEvent(input$addallSubstances, {
