@@ -165,7 +165,6 @@ v <- reactiveValues(
                     id = character(), doi = character(), date = character(),
                     stringsAsFactors = FALSE),
   crms = character(),
-  doi = NULL, abstract = NULL, date = NULL, table = NULL,
   spectralData = NULL
 )
 

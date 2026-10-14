@@ -83,11 +83,10 @@ output$summary <- renderUI({
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
   if(v$data$title[1]=='No results') return('')
-  if(!is.null(v$abstract)) paste(v$abstract) 
-  else {
-    HTML(paste("<div style='padding:10px 0px 10px 0px;'><p><strong>Summary</strong></p><p>",
-               v$data[v$data$name == input$selectedCRM, 'summary'], "</p></div>"))
-  }
+  s <- v$data$summary[v$data$name == input$selectedCRM]
+  req(length(s) == 1, !is.na(s), nzchar(s))
+  HTML(paste("<div style='padding:10px 0px 10px 0px;'><p><strong>Summary</strong></p><p>",
+             s, "</p></div>"))
 })
 
 #text that renders when any one of the crms have spectral data, indicating it can be viewed in the Spectral Data Tab
@@ -300,75 +299,49 @@ output$doi <- renderUI({
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
   if(v$data$title[1]=='No results') return('')
-  if(!is.null(v$doi)) {
-    HTML(paste(
-      "<div style='padding:10px 0px 10px 0px;'><p><strong>Link to Certificate (DOI)</strong></p><a href=\"", 
-      gsub('Resolve DOI:','',v$doi),"\" target=\"new\">", 
-      gsub('Resolve DOI:','',v$doi),"</a></div>"))
-  }
+  d <- v$data$doi[v$data$name == input$selectedCRM]
+  req(length(d) == 1, !is.na(d), nzchar(d))
+  HTML(paste0(
+    "<div style='padding:10px 0px 10px 0px;'><p><strong>Link to Certificate (DOI)</strong></p><a href=\"",
+    paste0("https://doi.org/", d), "\" target=\"new\">", d, "</a></div>"))
 })
 
-#outputs the publish data for the crm
-output$date <- renderUI({ 
+#outputs the publish date for the crm
+output$date <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
   if(v$data$title[1]=='No results') return('')
-  if(!is.null(v$date)) {
-    paste('Publication date:',v$date)
-  }
+  d <- v$data$date[v$data$name == input$selectedCRM]
+  req(length(d) == 1, !is.na(d), nzchar(d))
+  paste('Publication date:', d)
 })
 
-tableExists <- reactiveVal(FALSE)
+# analyte table for the selected crm
+crmAnalyteTable <- reactive({
+  req(length(input$customTable_rows_selected) == 1)
+  req(length(input$selectedCRM) > 0, input$selectedCRM != "No results")
+  
+  rmid <- v$data$id[v$data$name == input$selectedCRM]
+  req(length(rmid) == 1, nzchar(rmid))
+  
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  
+  DBI::dbGetQuery(con, "
+    SELECT name AS Analyte, quantity AS Quantity, value AS Value,
+           uncertainty AS Uncertainty, unit AS Unit, type AS Type
+    FROM analyte_tables
+    WHERE rmid = ?", params = list(rmid))
+})
 
 #outputs the analyte table (if it exists)
 output$analyteTable <- renderDT({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
-  
-  if(identical(input$selectedCRM, character(0))){
-    return(data.frame())
-  } 
-  
-  id_txt = v$data$id[v$data$name == input$selectedCRM]
-  req(nchar(id_txt)>8)
-  id = gsub("urn:uuid:","",v$data$id[v$data$name == input$selectedCRM])
-  
-  if(identical(id, character(0)) | id=='') {
-    return(data.frame())
-  }
-  
-  if(input$selectedCRM=='No results') {
-    return(data.frame())
-  }
-  
-  link = paste0('https://nrc-digital-repository.canada.ca/eng/view/object/?id=',id)
-  
-  #overrides the ssl verifypeer so the webpage can be reached
-  h <- curl::new_handle()
-  curl::handle_setopt(h, ssl_verifypeer = 0)
-  ddf = rvest::html_table(html_nodes(read_html(geturl(link, h)),'table'))
-  rm(h)
-
-  if(length(ddf)>0){
-    dd_1 = data.frame(ddf[1])
-    v$doi = dd_1[dd_1[,'X1']=='DOI',2]
-    v$abstract = dd_1[dd_1[,'X1']=='Abstract',2]
-    v$date = dd_1[dd_1[,'X1']=='Date published',2]
-  }
-  
-  d = ddf[length(ddf)]
-  
-  if(grepl('Analyte',paste(d))){
-    v$table =  ddf[length(ddf)]
-    tableExists(TRUE)
-    return(datatable(data.frame(d))) 
-  } else {
-    tableExists(FALSE)
-    return(NULL)
-  }
+  tbl <- crmAnalyteTable()
+  req(nrow(tbl) > 0)
+  datatable(tbl, rownames = FALSE)
 })
 
 #download handler for the analyte table download button
@@ -377,7 +350,7 @@ output$downloadTable <- downloadHandler(
     paste("certificate data.csv")
   },
   content = function(file) {
-    write.csv(v$table, file, row.names = FALSE)
+    write.csv(crmAnalyteTable(), file, row.names = FALSE)
   }
 )
 
@@ -386,9 +359,8 @@ output$analyteInfoDownload <- renderUI({
   req(length(input$customTable_rows_selected) == 1)
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
-  if (tableExists()){
-    downloadButton("downloadTable", "Download the Table as a .CSV", style = "width: fit-content;")
-  }
+  req(nrow(crmAnalyteTable()) > 0)
+  downloadButton("downloadTable", "Download the Table as a .CSV", style = "width: fit-content;")
 })
 
 #displays this message if the analyte choosen does not have crm information (will still show the information pulled form PubChem)
@@ -397,4 +369,3 @@ output$noInfo <- renderUI({
   req(req(v$crms == "No results"))
   p("This compound does not have CRM information.")
 })
-
