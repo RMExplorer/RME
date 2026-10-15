@@ -78,6 +78,10 @@ ui <- navbarPage(
       }
     });
     
+    Shiny.addCustomMessageHandler('scrollToTop', function(message) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
     $(document).on('click', '.view-info', function(e){
       e.preventDefault();
       var thisClickTime = new Date().getTime();

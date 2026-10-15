@@ -244,6 +244,7 @@ observeEvent(input$viewProperties, {
     v$crms <- c("No results" = "No results")
   }
   v$spectralData <- spectralData
+  session$sendCustomMessage("scrollToTop", list())
 })
 
 #when a new analyte is selected, add it to the table list

@@ -32,8 +32,8 @@ output$RMESearch <- renderUI({
       ),
       
       p("Instructions: Add compounds to the table below using the search dropdown above. 
-        Select one row from the table in order to see its properties. 
-        The table is linked to the `Polarity-MW Plot` tab.
+        Select a row and click 'View Properties' to see its properties. 
+        The table is linked to the 'Polarity-MW Plot' tab.
         Reference Materials that appear in all rows are highlighted in red."),
       
       hr(),
