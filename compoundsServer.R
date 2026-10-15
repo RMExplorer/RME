@@ -132,6 +132,7 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
     commonCrms <- Reduce(intersect, lapply(rows, `[[`, "crms"))
     makeLinks <- function(crmList) {
       if (length(crmList) == 0) return("<p>No results</p>")
+      crmList <- c(crmList[crmList %in% commonCrms], crmList[!crmList %in% commonCrms]) # show highlighted links first
       paste0('<a href="#" class="view-info2" data-name="', crmList, '"',
              ifelse(crmList %in% commonCrms, ' style="color:red"', ''), '>',
              crmList, "</a>", collapse = " ")
@@ -375,7 +376,26 @@ output$customTable <- renderDT({
   }
   
   datatable(data, selection = "single",
-            options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip'), 
+            options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip',
+                           # show only the first 4 CRM links, "more"/"less" expands or collapses the cell
+                           # (handled by the .cell-toggle click handler in ui.R)
+                           columnDefs = list(list(
+                             targets = 4,
+                             render = JS(
+                               "function(data, type, row, meta) {",
+                               "  if (type === 'display' && data != null) {",
+                               "    var links = data.match(/<a [^>]*>.*?<\\/a>/g);",
+                               "    if (links && links.length > 4) {",
+                               "      var short = links.slice(0, 4).join(' ') + ' ...';",
+                               "      return '<span class=\"cell-expand\" data-full=\"' + encodeURIComponent(data) +",
+                               "             '\" data-short=\"' + encodeURIComponent(short) +",
+                               "             '\" data-expanded=\"false\">' + short + ' <a href=\"#\" class=\"cell-toggle\">more</a></span>';",
+                               "    }",
+                               "  }",
+                               "  return data;",
+                               "}"
+                             )
+                           ))),
             filter= list(position='top', clear = FALSE), escape = FALSE, rownames = FALSE)
 })
 
