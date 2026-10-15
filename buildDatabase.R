@@ -9,7 +9,6 @@ list2env(harvest, environment())  # reference_materials, analyte_tables, compoun
 # The database is now the source of truth and is never deleted by this script.
 # To force a full rebuild (e.g. after a schema change), delete nrc_crm.sqlite and re-run populateDatabase.R (with no database it harvests everything)
 con <- dbConnect(RSQLite::SQLite(), DB_PATH)
-on.exit(dbDisconnect(con), add = TRUE)
 dbExecute(con, "PRAGMA foreign_keys = ON")
 
 # create tables (no-ops if they already exist)
@@ -130,3 +129,5 @@ dbWithTransaction(con, {
 for (t in c("reference_materials", "compounds", "analyte_tables", "spectral_data")) {
   cat(sprintf("%-20s %d rows\n", t, dbGetQuery(con, paste("SELECT COUNT(*) n FROM", t))$n))
 }
+
+dbDisconnect(con)
