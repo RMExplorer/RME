@@ -1,6 +1,6 @@
 #the dropdown ui in the 'Spectral Data' page
 output$spectrumDropdown <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   spectrums <- c("Select an option", v$spectralData$Name[!is.na(v$spectralData$SpectralLink)])
   
   selectizeInput(
@@ -11,7 +11,7 @@ output$spectrumDropdown <- renderUI({
 
 #outputs the spectral graph and the download button
 output$spectrumView <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   list(
     tags$div(
       uiOutput("spectrumDropdown"),
@@ -36,7 +36,7 @@ output$spectrumView <- renderUI({
 output$spectrum <- renderPlotly({
   shinyjs::hide("downloadSpectrumData")
   req(input$spectrumSelection)
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   
   if (input$spectrumSelection == "Select an option") {
     output$spectrumStatus <- renderText({})

@@ -1,14 +1,13 @@
 #text shown when none or more than 1 analyte is selected
 output$propertiesNothingSelected <- renderUI({
-  req(length(input$customTable_rows_selected) != 1)
-  HTML(paste(
-    "<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab to view its properties.</p>"
-  ))
+  req(is.null(viewedCompound()))
+  HTML("<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab 
+       and click <strong>View properties</strong> to view its properties.</p>")
 })
 
 #dropdown with all the crm options of the given compound
 output$selectCRMdropdown = renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(v$crms != "No results")
   pickerInput(inputId = "selectedCRM", strong("Select a CRM for the analyte of interest from the dropdown below"), 
               choices = v$crms, width = "100%")
@@ -16,10 +15,7 @@ output$selectCRMdropdown = renderUI({
 
 #for the sketch of the molecule in the Properties tab
 output$molecule <- renderPlot({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  selectedAnalyte <- result %>% slice(input$customTable_rows_selected)
+  selectedAnalyte <- req(viewedCompound())
   req(!is.na(selectedAnalyte$"Isomeric Smiles"))
   smil <- selectedAnalyte$"Isomeric Smiles"
   mol <- parse.smiles(smil)[[1]]
@@ -59,16 +55,13 @@ output$molecule <- renderPlot({
 })
 
 output$currentCompoundName <- renderText({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  data <- result %>% slice(input$customTable_rows_selected)
+  data <- req(viewedCompound())
   paste('Showing Information on:', data$Name)
 })
 
 #the title of the crm
 output$title <- renderText({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
@@ -78,7 +71,7 @@ output$title <- renderText({
 
 #the summary of the crm
 output$summary <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
@@ -91,7 +84,7 @@ output$summary <- renderUI({
 
 #text that renders when any one of the crms have spectral data, indicating it can be viewed in the Spectral Data Tab
 output$hasSpectrum <- renderUI ({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(v$crms != "No results")
   if (length(v$spectralData$SpectralLink[!is.na(v$spectralData$SpectralLink)]) > 0) {
     list(
@@ -115,10 +108,7 @@ observeEvent(input$showSpectrum, {
 # min/max mass fraction and mass concentration of the selected compound across the CRMs it appears in
 # (these values are calculated in compoundsServer.R and stored in getTableData$result())
 output$massRange <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  data <- result %>% slice(input$customTable_rows_selected)
+  data <- req(viewedCompound())
   req(nrow(data) == 1)
   
   #formats one of the min/max columns, matched by name so the exact unit characters do not matter
@@ -150,10 +140,7 @@ output$massRange <- renderUI({
 
 #dropdown list of all the similar compound's inchikey. To be selected and added to the compounds table
 output$similarCompounds <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  data <- result %>% slice(input$customTable_rows_selected)
+  data <- req(viewedCompound())
   req(data$CID)
   
   #finds all the similar compounds cids (converted to inchikey)
@@ -238,10 +225,7 @@ observeEvent(input$addSimilar, {
 
 #outputs the data pulled from pubchem (molecular formula, molecular weight, smiles, inchikey, exact mass, tpsa, pkow, pubchem link)
 output$information <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
-  req(length(getTableData$result()) > 0)
-  result <- getTableData$result()
-  data <- result %>% slice(input$customTable_rows_selected)
+  data <- req(viewedCompound())
   req(data$InchiKey)
   
   synonyms <- NA
@@ -294,7 +278,7 @@ output$information <- renderUI({
 
 #outputs the doi link
 output$doi <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
@@ -308,7 +292,7 @@ output$doi <- renderUI({
 
 #outputs the publish date for the crm
 output$date <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   if(input$selectedCRM=='No results') return('')
@@ -320,7 +304,7 @@ output$date <- renderUI({
 
 # analyte table for the selected crm
 crmAnalyteTable <- reactive({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM) > 0, input$selectedCRM != "No results")
   
   rmid <- v$data$id[v$data$name == input$selectedCRM]
@@ -356,7 +340,7 @@ output$downloadTable <- downloadHandler(
 
 #ui so that download button is only shown if the analyte table is shown
 output$analyteInfoDownload <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
+  req(viewedCompound())
   req(length(input$selectedCRM)>0)
   req(v$crms != "No results")
   req(nrow(crmAnalyteTable()) > 0)
@@ -365,7 +349,7 @@ output$analyteInfoDownload <- renderUI({
 
 #displays this message if the analyte choosen does not have crm information (will still show the information pulled form PubChem)
 output$noInfo <- renderUI({
-  req(length(input$customTable_rows_selected) == 1)
-  req(req(v$crms == "No results"))
+  req(viewedCompound())
+  req(v$crms == "No results")
   p("This compound does not have CRM information.")
 })

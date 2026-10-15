@@ -168,6 +168,9 @@ v <- reactiveValues(
   spectralData = NULL
 )
 
+# the compound whose properties are currently being shown
+viewedCompound <- reactiveVal(NULL)
+
 # contains list of compounds currently in the table
 yourTableAnalytes <- reactiveVal(list())
 
@@ -183,62 +186,63 @@ output$searchAnalyte <- renderUI({
                  width="350px")
 })
 
-#when a row from the table is clicked, gathers all the information necessary for the 'Properties' and 'Spectral Data' page
-observeEvent(input$customTable_rows_selected, {
-  if (length(input$customTable_rows_selected) == 1) {
-    req(length(getTableData$result()) > 0)
-    result <- getTableData$result()
-    row = result %>% slice(input$customTable_rows_selected)
-    
-    # spectral data from the database
-    ik <- if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) trimws(row$InchiKey) else ""
-    con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
-    spectra <- tryCatch(
-      DBI::dbGetQuery(con, "
+# when a row from the table is selected and the "View Properties" button is clicked, 
+# gathers all the information necessary for the 'Properties' and 'Spectral Data' page
+observeEvent(input$viewProperties, {
+  req(length(input$customTable_rows_selected) == 1)
+  req(length(getTableData$result()) > 0)
+  result <- getTableData$result()
+  row <- result %>% slice(input$customTable_rows_selected)
+  viewedCompound(row)
+  
+  # spectral data from the database
+  ik <- if (!is.na(row$InchiKey) && nzchar(row$InchiKey)) trimws(row$InchiKey) else ""
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+  spectra <- tryCatch(
+    DBI::dbGetQuery(con, "
         SELECT rm.name AS crm, s.name AS substance, s.datatype, s.link
         FROM spectral_data s
         JOIN reference_materials rm ON rm.rmid = s.rmid
         WHERE (? <> '' AND s.inchikey = ? COLLATE NOCASE)
            OR (LENGTH(TRIM(s.name)) > 0 AND INSTR(LOWER(?), LOWER(TRIM(s.name))) > 0)
         ORDER BY rm.name, s.datatype",
-                      params = list(ik, ik, row$Name)),
-      finally = DBI::dbDisconnect(con)
-    )
-    
-    spectralData <- if (nrow(spectra) > 0) {
-      data.frame(Name = paste(spectra$crm, spectra$datatype, spectra$substance, sep = ", "),
-                 SpectralLink = spectra$link,
-                 stringsAsFactors = FALSE)
-    } else {
-      data.frame()
-    }
-    
-    # CRM info from the database, using the CRMs already attached to this compound
-    crmNames <- if (!is.na(row$CRMs) && nzchar(row$CRMs)) {
-      unique(trimws(strsplit(row$CRMs, ",")[[1]]))
-    } else character()
-    
-    if (length(crmNames) > 0) {
-      con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
-      df <- tryCatch(
-        DBI::dbGetQuery(con, paste0(
-          "SELECT rmid AS id, name, title, summary, doi, date
+                    params = list(ik, ik, row$Name)),
+    finally = DBI::dbDisconnect(con)
+  )
+  
+  spectralData <- if (nrow(spectra) > 0) {
+    data.frame(Name = paste(spectra$crm, spectra$datatype, spectra$substance, sep = ", "),
+               SpectralLink = spectra$link,
+               stringsAsFactors = FALSE)
+  } else {
+    data.frame()
+  }
+  
+  # CRM info from the database, using the CRMs already attached to this compound
+  crmNames <- if (!is.na(row$CRMs) && nzchar(row$CRMs)) {
+    unique(trimws(strsplit(row$CRMs, ",")[[1]]))
+  } else character()
+  
+  if (length(crmNames) > 0) {
+    con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+    df <- tryCatch(
+      DBI::dbGetQuery(con, paste0(
+        "SELECT rmid AS id, name, title, summary, doi, date
        FROM reference_materials
        WHERE name IN (", paste(rep("?", length(crmNames)), collapse = ","), ")
        ORDER BY name"), params = as.list(crmNames)),
-        finally = DBI::dbDisconnect(con)
-      )
-      crms <- df$name
-      names(crms) <- crms
-      v$data <- df
-      v$crms <- crms
-    } else {
-      v$data <- data.frame(name = "No results", title = "No results", summary = "",
-                           id = "", doi = "", date = "", stringsAsFactors = FALSE)
-      v$crms <- c("No results" = "No results")
-    }
-    v$spectralData <- spectralData
+      finally = DBI::dbDisconnect(con)
+    )
+    crms <- df$name
+    names(crms) <- crms
+    v$data <- df
+    v$crms <- crms
+  } else {
+    v$data <- data.frame(name = "No results", title = "No results", summary = "",
+                         id = "", doi = "", date = "", stringsAsFactors = FALSE)
+    v$crms <- c("No results" = "No results")
   }
+  v$spectralData <- spectralData
 })
 
 #when a new analyte is selected, add it to the table list
