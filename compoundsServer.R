@@ -1,5 +1,7 @@
 getTableData <- ExtendedTask$new(function(compounds, dbPath) {
   future_promise({
+    httr::set_config(httr::config(ssl_verifypeer = 0L)) # bypass ssl
+    
     # connect to database
     con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
     on.exit(DBI::dbDisconnect(con), add = TRUE) # close connection when function returns
