@@ -28,7 +28,7 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("xml2","dplyr","httr2","stringr","DBI","RSQLite","webchem","PubChemR","plyr","tibble","curl"))'
+          Rscript -e 'install.packages(c("rsconnect","xml2","dplyr","httr2","stringr","DBI","RSQLite","webchem","PubChemR","plyr","tibble","curl"))'
 
       - name: Harvest NRC records
         run: Rscript populateDatabase.R
@@ -36,6 +36,25 @@ jobs:
       - name: Update SQLite database
         run: Rscript buildDatabase.R
 
+      # Deploy every week, whether or not the harvest found anything new
+      - name: Deploy to Posit Connect Cloud
+        run: |
+          Rscript -e '
+          rsconnect::connectCloudClientCredentials(
+            clientId     = Sys.getenv("CONNECT_CLOUD_CLIENT_ID"),
+            clientSecret = Sys.getenv("CONNECT_CLOUD_CLIENT_SECRET"),
+            account      = "rmexplorer"
+          )
+          rsconnect::deployApp(
+            appDir   = ".",
+            appId    = "01a0ce84-2e9e-8ef0-5e3a-d2155d16f244"
+          )
+          '
+        env:
+          CONNECT_CLOUD_CLIENT_ID: ${{ secrets.CONNECT_CLOUD_CLIENT_ID }}
+          CONNECT_CLOUD_CLIENT_SECRET: ${{ secrets.CONNECT_CLOUD_CLIENT_SECRET }}
+
+      # Only after a successful deploy, so the repo never gets ahead of the app
       - name: Commit updated database
         run: |
           git config user.name  "github-actions[bot]"
