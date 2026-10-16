@@ -1,10 +1,26 @@
+library(curl)
 library(xml2)
 library(stringr)
+library(webchem)
+library(PubChemR)
 
 #types of spectrums
 types <- c("NMR", "FSMS", "MSMS")
 
 dbPath <- "nrc_crm.sqlite"
+
+# Helper: convert xml to dataframe (Juris function)
+xml_to_dataframe <- function(nodeset){
+  if(class(nodeset) != 'xml_nodeset'){ stop('Input should be "xml_nodeset" class') }
+  lst <- lapply(nodeset, function(x){
+    tmp <- xml2::xml_text(xml2::xml_children(x))
+    names(tmp) <- xml2::xml_name(xml2::xml_children(x))
+    return(as.list(tmp))
+  })
+  result <- do.call(plyr::rbind.fill, lapply(lst, function(x)
+    as.data.frame(x, stringsAsFactors = F)))
+  return(tibble::as_tibble(result))
+}
 
 #method to get url content (used to bypass ssl)
 geturl <- function(url, handle) {
@@ -48,5 +64,8 @@ get_compound_crms <- function(term, inchikey) {
     crms <- sort(vapply(str_split(df$title, ":"), function(x) str_trim(x[1]), character(1)))
     crms <- unique(crms[crms != "No results"])
     if (length(crms) == 0) NA_character_ else paste(crms, collapse = ", ")
-  }, error = function(e) NA_character_)
+  }, error = function(e) {
+    message("NRC lookup failed for '", term, "': ", conditionMessage(e))
+    NA_character_
+  })
 }
