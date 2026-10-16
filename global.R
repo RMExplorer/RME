@@ -28,6 +28,8 @@ get_pubchem_synonyms <- function(cid, n = 10, sep = "; ") {
   paste(head(values, n), collapse = sep)
 }
 
+h_new <- function() curl::new_handle(ssl_verifypeer = FALSE)
+
 # Returns crms that feature a given compound
 get_compound_crms <- function(term, inchikey) {
   tryCatch({
