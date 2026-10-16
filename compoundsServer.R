@@ -1,7 +1,5 @@
 getTableData <- ExtendedTask$new(function(compounds, dbPath) {
   future_promise({
-    httr::set_config(httr::config(ssl_verifypeer = 0L)) # bypass ssl
-    
     # connect to database
     con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
     on.exit(DBI::dbDisconnect(con), add = TRUE) # close connection when function returns
@@ -50,7 +48,13 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
         synonyms     <- get_pubchem_synonyms(cid)
         compoundName <- term
         if (isInchikey && !is.na(synonyms)) compoundName <- strsplit(synonyms, "; ")[[1]][1]
-        crms         <- get_compound_crms(compoundName, pick(info[["InChIKey"]]))
+        crms <- tryCatch(
+          get_compound_crms(compoundName, pick(info[["InChIKey"]])),
+          error = function(e) {
+            message("CRM lookup failed for '", term, "': ", conditionMessage(e))
+            NA_character_
+          }
+        )
         
         data.frame(
           name = compoundName, cid = cid, inchikey = pick(info[["InChIKey"]]),

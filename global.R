@@ -27,3 +27,24 @@ get_pubchem_synonyms <- function(cid, n = 10, sep = "; ") {
   
   paste(head(values, n), collapse = sep)
 }
+
+# Returns crms that feature a given compound
+get_compound_crms <- function(term, inchikey) {
+  tryCatch({
+    q <- gsub(" ", "+", term)
+    if (length(inchikey) == 1 && !is.na(inchikey)) {
+      link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
+                     '+OR+', gsub("/", "%2F", gsub(" ", "+", inchikey)),
+                     '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+    } else {
+      link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
+                     '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
+    }
+    d  <- xml_children(read_xml(geturl(link, h_new())))
+    df <- xml_to_dataframe(d)[-1, -c(1, 2)]
+    df <- df[!is.na(df$title), ]
+    crms <- sort(vapply(str_split(df$title, ":"), function(x) str_trim(x[1]), character(1)))
+    crms <- unique(crms[crms != "No results"])
+    if (length(crms) == 0) NA_character_ else paste(crms, collapse = ", ")
+  }, error = function(e) NA_character_)
+}
