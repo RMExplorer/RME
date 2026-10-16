@@ -47,7 +47,8 @@ jobs:
           )
           rsconnect::deployApp(
             appDir   = ".",
-            appId    = "01a0ce84-2e9e-8ef0-5e3a-d2155d16f244"
+            appId    = "01a0ce84-2e9e-8ef0-5e3a-d2155d16f244",
+            manifestPath = "manifest.json"
           )
           '
         env:
