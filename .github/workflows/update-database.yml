@@ -1,0 +1,45 @@
+name: Update NRC CRM database
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"     # Mondays 06:00 UTC (3:00 AM ADT/2:00 AM AST)
+  workflow_dispatch:        # adds manual "Run workflow" button
+
+permissions:
+  contents: write           # needed to push the updated database
+
+concurrency:
+  group: update-database
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: .   # scripts are in root folder
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true   # prebuilt Linux binaries, much faster installs
+
+      - name: Install R packages
+        run: |
+          Rscript -e 'install.packages(c("xml2","dplyr","httr2","stringr","DBI","RSQLite","webchem","PubChemR","plyr","tibble","curl"))'
+
+      - name: Harvest NRC records
+        run: Rscript populateDatabase.R
+
+      - name: Update SQLite database
+        run: Rscript buildDatabase.R
+
+      - name: Commit updated database
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add nrc_crm.sqlite
+          git diff --cached --quiet || git commit -m "Weekly NRC CRM database update"
+          git push
