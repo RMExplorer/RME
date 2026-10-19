@@ -32,7 +32,7 @@ Certified values for each analyte in a CRM.
 | name | TEXT | PK | Analyte name (e.g. domoic acid) |
 | quantity | TEXT | PK | e.g. mass fraction, concentration |
 | value | TEXT | | Type is TEXT because some values include "<" (e.g. <90) |
-| uncertainty | REAL | | TODO |
+| uncertainty | REAL | | |
 | unit | TEXT | | e.g. µg/kg |
 | type | TEXT | | One of "certified", "information", "reference" |
 
@@ -48,9 +48,9 @@ One row per compound, enriched from PubChem.
 | molecular_formula | TEXT | | |
 | molecular_weight | REAL | | |
 | smiles | TEXT | | Represents chemical structure of a compound |
-| pKow | REAL | | XLogP * -1 |
-| exact_mass | REAL | | TODO |
-| TPSA | REAL | | TODO |
+| pKow | REAL | | Calculated as XLogP * -1 |
+| exact_mass | REAL | | |
+| TPSA | REAL | | |
 | crms | TEXT | | Comma-separated CRMs the compound appears in |
 
 ## spectral_data
