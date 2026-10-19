@@ -9,6 +9,15 @@ The RM Explorer was developed by the National Research Council of Canada's (NRC)
 
 Please cite as: Bruno Garrido, Tanishka Ghosh, Daniel Yang, Patricia LeBlanc, Marcin Paluch, Sophie Roy, Pearse McCarron, Zoltán Mester, and Juris Meija, RM Explorer version 1.0, 2025 https://rmexplorer-rmev1.share.connect.posit.cloud/
 
+
+## Documentation
+
+Project documentation lives in the [`docs/`](docs/) folder:
+
+- [Data dictionary](docs/data-dictionary.md): the tables and columns in `nrc_crm.sqlite`
+- [Deployment and operations](docs/deployment-operations.md): how the database is updated weekly, how the app is deployed, and what to check when something breaks
+
+
 ## Getting Started
 
 ### 1. Clone the repository
