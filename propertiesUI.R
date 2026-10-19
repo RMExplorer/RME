@@ -1,6 +1,22 @@
 #contains the properties UI
 #the rendering for the text content is done in propertiesText.R
 output$properties <- renderUI({
+  
+  # nothing selected: just the instruction line, centered, no cards
+  if (is.null(viewedCompound())) {
+    return(tagList(
+      div(
+        style = "display:flex; justify-content:center; align-items:center; 
+                 min-height:70vh; text-align:center; font-size:1.5rem; color:#6c757d;",
+        p(HTML("Use the <strong>CRM Search</strong> tab to search for CRMs. Add their corresponding 
+                compounds to the <strong>Compound Table</strong> using the <strong>Add chosen CRM(s)
+                </strong> button, or use the <strong>Compound Search</strong> tab to search for 
+                compounds directly. To view a compound’s properties, select it's row in the 
+                <strong>Compound Table</strong> and click <strong>View Properties</strong>."))
+      )
+    ))
+  }
+  
   tagList(
     conditionalPanel("$('#summary').hasClass('recalculating') | $('#html').hasClass('shiny-busy')", 
                      fixedPanel(

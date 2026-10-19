@@ -57,6 +57,10 @@ output$instructions <- renderUI({
             " to view the CRMs associated with a specific group."
           ),
           p(
+            "You can use ", strong("'Select a Material Type'"), 
+            " to view the CRMs of a specified type."
+          ),
+          p(
             "Clicking the name of a CRM in the table will display a popup containing information about that CRM."
           ),
           p(
@@ -66,10 +70,6 @@ output$instructions <- renderUI({
           p(
             "To add the compounds referenced by one or more CRMs to the Compound Table, select the desired CRM(s) and click ",
             strong("'Add Chosen CRM(s) to the Compound Table'"), "."
-          ),
-          p(
-            "The ", strong("'Unselect All Rows'"), 
-            " button can be used to clear all selected CRMs."
           )
         )
       ),
@@ -90,11 +90,11 @@ output$instructions <- renderUI({
             " everything currently in the table."
           ),
           p(
-            "You can select a compound from the Compound Table to display its properties in the main area of the Home page."
+            "The ", strong("'Add All"), " button allows you to add all compounds in the NRC repository to the compound table."
           ),
           p(
-            "The ", strong("'Unselect All Rows'"), 
-            " button can be used to clear all selected compounds from the table."
+            "You can select a compound from the Compound Table and click ", strong("'View Properties'"), 
+            " to display its properties in the main area of the Home page."
           ),
           p(
             "You can save the compounds currently loaded in the table by clicking the ",
@@ -115,15 +115,15 @@ output$instructions <- renderUI({
         tagList(
           p(
             "The ", strong("Properties"), 
-            " section is displayed in the main area of the Home page. When a single compound is selected from the Compound Table, 
-            detailed information about that compound will be displayed here."
+            " section is displayed in the main area of the Home page. When a single compound is selected from the Compound Table and the ",
+            strong("'View Properties'"), " button is clicked, detailed information about that compound will be displayed here."
           ),
           p(
             "If the compound has spectral data, you can click the ",
             strong("'Go To Spectral Data'"), 
             " button or scroll down the page to see its spectral data. Once you reach the Spectral Data section, you can select the 
-            available spectral data from the dropdown to view the corresponding spectral graphs. A download button is also available to 
-            download the selected spectral data."
+            available spectral data from the dropdown to view the corresponding spectral graphs. A metadata toggle is available to show
+            or hide the metadata. A download button is also available to download the selected spectral data."
           ),
           p(
             "A ", strong("'Similar Compounds'"), 

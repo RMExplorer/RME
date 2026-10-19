@@ -15,8 +15,7 @@ output$RMESearch <- renderUI({
       textOutput("urlerror"),
       
       div(
-        actionButton("addallSubstances", div("Add All", tooltip_ui("substanceaddTooltip", "Add all compounds to the table. 
-                                                                                          May take up to 3+ minutes. Not all 
+        actionButton("addallSubstances", div("Add All", tooltip_ui("substanceaddTooltip", "Add all compounds to the table. Not all 
                                                                                           compounds from the NRC repository will be 
                                                                                           added due to search limitations."),
                                              style="display:flex;"), 
@@ -31,9 +30,7 @@ output$RMESearch <- renderUI({
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
       
-      p("Instructions: Add compounds to the table below using the search dropdown above. 
-        Select a row and click 'View Properties' to see its properties. 
-        The table is linked to the 'Polarity-MW Plot' tab.
+      p("The compound table is linked to the 'Polarity-MW Plot' tab.
         Reference Materials that appear in all rows are highlighted in red."),
       
       hr(),
