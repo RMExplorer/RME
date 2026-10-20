@@ -1,3 +1,6 @@
+## server.R
+## Entry point for the server logic
+
 library(bslib)
 library(ggplot2)
 library(tidyverse)

@@ -1,3 +1,7 @@
+## renderSpectrumServer.R
+## Server logic for the 'Spectral Data' section at the bottom of the properties page
+## The spectra are loaded into v$spectralData when 'View Properties' is clicked (see compoundsServer.R)
+
 #the dropdown ui in the 'Spectral Data' page
 output$spectrumDropdown <- renderUI({
   req(viewedCompound())

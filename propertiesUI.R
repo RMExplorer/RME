@@ -1,5 +1,6 @@
-#contains the properties UI
-#the rendering for the text content is done in propertiesText.R
+## propertiesUI.R
+## Renders output$properties for use in an accordion_panel(..., uiOutput("properties))
+
 output$properties <- renderUI({
   
   # nothing selected: just the instruction line, centered, no cards

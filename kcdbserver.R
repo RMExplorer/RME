@@ -1,3 +1,6 @@
+## kcdbserver.R
+## Fetches CMC entries from the BIPM KCDB API and renders them in the 'CMC Information' tab
+
 library(httr)
 
 #get one entry to find out the total number of elements in order to request that number

@@ -1,3 +1,6 @@
+## tooltip_ui.R
+## Helper that returns an info icon with a bslib tooltip
+
 tooltip_ui <- function(id, text, location = "right"){
   ns <- NS(id)
   tags$div(

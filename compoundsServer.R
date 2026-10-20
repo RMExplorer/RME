@@ -1,3 +1,6 @@
+## compoundsServer.R
+## Server logic for the 'Compound Search' tab; manages the list of compounds in the compound table
+
 getTableData <- ExtendedTask$new(function(compounds, dbPath) {
   future_promise({
     # connect to database

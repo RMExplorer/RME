@@ -1,3 +1,6 @@
+## physicoChemicalPlot.R
+## Server logic for the 'Polarity-MW Plot' tab
+
 #allows filtering of plot data
 output$plotFilters <- renderUI({
   req(nrow(getTableData$result()) > 0)

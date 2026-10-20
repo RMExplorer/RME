@@ -1,3 +1,6 @@
+## compoundsUI.R
+## Renders output$RMESearch for use in an accordion_panel(..., uiOutput("RMESearch")) in ui.R
+
 output$RMESearch <- renderUI({
   list(
     tags$div(

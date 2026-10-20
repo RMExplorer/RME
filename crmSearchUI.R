@@ -1,3 +1,6 @@
+## crmSearchUI.R
+## Renders output$crmSearch for use in an accordion_panel(..., uiOutput("crmSearch")) in ui.R
+
 output$crmSearch <- renderUI({
   list(
     tags$div(

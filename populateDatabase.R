@@ -1,3 +1,7 @@
+## populateDatabase.R
+## Harvests CRM records from NRC OAI-PMH endpoint and enriches compound data with PubChem
+## Stores data in "harvest.rds" to be read by buildDatabase.R
+
 library(xml2)
 library(dplyr)
 library(httr2)

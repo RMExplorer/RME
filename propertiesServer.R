@@ -1,9 +1,5 @@
-#text shown when none or more than 1 analyte is selected
-output$propertiesNothingSelected <- renderUI({
-  req(is.null(viewedCompound()))
-  HTML("<p>Select <strong>one</strong> option from the table in the 'Compound Search' tab 
-       and click <strong>View properties</strong> to view its properties.</p>")
-})
+## propertiesServer.R
+## Server logic for the properties page; shows information about the compound stored in viewedCompound() (see compoundsServer.R)
 
 #dropdown with all the crm options of the given compound
 output$selectCRMdropdown = renderUI({

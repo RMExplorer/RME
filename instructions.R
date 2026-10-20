@@ -1,3 +1,6 @@
+## instructions.R
+## Renders output$instructions for use in a fluidPage(..., uiOutput("instructions")) in ui.R
+
 output$instructions <- renderUI({
   
   # helper for a single instruction section

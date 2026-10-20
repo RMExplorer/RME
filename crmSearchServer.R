@@ -1,3 +1,6 @@
+## crmSearchServer.R
+## Server logic for the 'CRM Search' tab; manages the list of CRMs in the CRM table
+
 # runs a query against the DB and returns the result as a dataframe
 dbQuery <- function(sql, params = NULL) {
   con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
@@ -202,7 +205,7 @@ observeEvent(input$addAllCRMs, {
   crmList(newList)
 })
 
-#fired when user trys to add the analytes from a crm to the substance table
+#fired when user tries to add the analytes from a crm to the substance table
 observeEvent(input$addCRM, {
   req(input$crmTable_rows_selected)
   

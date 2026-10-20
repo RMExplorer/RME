@@ -1,5 +1,5 @@
 ## about.R
-## Renders output$about for use in a tabPanel("About", uiOutput("about"))
+## Renders output$about for use in a tabPanel("About", uiOutput("about")) in ui.R
 
 output$about <- renderUI({
   

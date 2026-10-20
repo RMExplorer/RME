@@ -1,3 +1,6 @@
+## gobal.R
+## Used to store helper functions and global variables
+
 library(curl)
 library(xml2)
 library(stringr)

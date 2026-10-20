@@ -1,3 +1,6 @@
+## buildDatabase.R
+## Builds/updates SQLite database "nrc_crm.sqlite" by reading data saved in "harvest.rds" (see populateDatabase.R)
+
 library(DBI)
 library(RSQLite)
 
@@ -6,7 +9,7 @@ DB_PATH <- "nrc_crm.sqlite"
 harvest <- readRDS("harvest.rds")
 list2env(harvest, environment())  # reference_materials, analyte_tables, compounds, spectral_data, harvest_started
 
-# The database is now the source of truth and is never deleted by this script.
+# The database is the source of truth and is never deleted by this script.
 # To force a full rebuild (e.g. after a schema change), delete nrc_crm.sqlite and re-run populateDatabase.R (with no database it harvests everything)
 con <- dbConnect(RSQLite::SQLite(), DB_PATH)
 dbExecute(con, "PRAGMA foreign_keys = ON")

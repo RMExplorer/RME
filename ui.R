@@ -1,3 +1,6 @@
+## ui.R
+## Layout and client-side JavaScript for the whole app
+
 library(bslib)
 library(ggplot2)
 library(tidyverse)
