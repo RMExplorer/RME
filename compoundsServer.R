@@ -8,9 +8,6 @@ getTableData <- ExtendedTask$new(function(compounds, dbPath) {
     on.exit(DBI::dbDisconnect(con), add = TRUE) # close connection when function returns
     
     # helper functions:
-    fracFactor <- c("mg/g" = 1000, "µg/kg" = 1/1000, "g/g" = 1e6, "pg/g" = 1e-6,
-                    "ng/g" = 1/1000, "kg/kg" = 1e6, "g/kg" = 1000)
-    concFactor <- c("µg/L" = 1/1000, "mg/mL" = 1000, "g/mL" = 1e6)
     convert <- function(value, unit, factors) {
       f <- unname(factors[unit]); f[is.na(f)] <- 1
       value * f

@@ -7,8 +7,11 @@ library(stringr)
 library(webchem)
 library(PubChemR)
 
-#types of spectrums
-types <- c("NMR", "FSMS", "MSMS")
+# conversion factors
+fracFactor <- c("mg/g" = 1000, "µg/kg" = 1/1000, "g/g" = 1e6, "pg/g" = 1e-6,
+                "ng/g" = 1/1000, "kg/kg" = 1e6, "g/kg" = 1000)
+concFactor <- c("µg/mL" = 1, "mg/L"  = 1, "µg/L"  = 1e-3,
+                "mg/mL" = 1e3, "ng/L"  = 1e-6, "g/mL"  = 1e6)
 
 dbPath <- "nrc_crm.sqlite"
 
