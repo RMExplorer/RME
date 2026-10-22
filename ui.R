@@ -170,6 +170,8 @@ ui <- navbarPage(
                  style="display:flex;justify-content:center;"),          
              div(uiOutput("plotFilters"),                                       #in physicoChemicalPlot.R (loaded in server.R)
                  style="display:flex; justify-content:center;"),                 
+             em("Concentration colour scale: Use 'Filter by Material Type' to show only analytes found in a given type of reference material. Once a type is selected, you can colour the points by the lowest concentration reported for each analyte in that type (converted to µg/mL, on a logarithmic scale). Hover over a point to see its full concentration range. Grey points have no concentration that can be shown, for example because they are certified as a mass fraction rather than a mass per volume."),
+             br(), br(),
              uiOutput("compoundList"),                                          #in physicoChemicalPlot.R (loaded in server.R)
              br(),
              em("About the plot sectors: The quadrants represented on this plot follow the categories that were historically used by the Organic Analysis Working Group of the Consultative Committee for Amount of Substance (CCQM-OAWG). The Low/High Molecular Weight boundary is set at 500 and low/high polarity at pKow = -2. The OAWG has more recently eliminated the low/high polarity  classification for the high MW quadrant but we chose to keep it in this app as we believe it provides valuable information."),

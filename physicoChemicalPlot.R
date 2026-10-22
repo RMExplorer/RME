@@ -1,6 +1,40 @@
 ## physicoChemicalPlot.R
 ## Server logic for the 'Polarity-MW Plot' tab
 
+materialTypes <- c("Matrix material", "Calibration solution", "High-purity material")
+
+num <- function(x) suppressWarnings(as.numeric(x))
+
+typeFilterOn <- reactive(isTruthy(input$materialType))  # "" or NULL = all types
+colorOn <- reactive(typeFilterOn() && isTRUE(input$colorByConc))
+
+analyteRanges <- reactive({
+  req(typeFilterOn())
+  
+  con <- DBI::dbConnect(RSQLite::SQLite(), dbPath)
+  on.exit(DBI::dbDisconnect(con), add = TRUE)
+  
+  rows <- DBI::dbGetQuery(con, "
+    SELECT a.name, LOWER(a.quantity) AS quantity, a.value, a.unit
+    FROM analyte_tables a
+    JOIN reference_materials r ON r.rmid = a.rmid
+    WHERE r.material_type = ?",
+                          params = list(input$materialType))
+  
+  # "mass concentration (20 °C)" -> "mass concentration"
+  qbase <- trimws(sub("\\s*\\(.*\\)\\s*$", "", rows$quantity))
+  f <- unname(concFactor[gsub("μ", "µ", trimws(rows$unit))])   # NA if unit unrecognised
+  isConc <- qbase %in% c("mass concentration", "concentration") & !is.na(f)
+  
+  data.frame(key  = tolower(trimws(rows$name)),
+             conc = ifelse(isConc, num(rows$value) * f, NA_real_)) %>%
+    dplyr::group_by(key) %>%
+    dplyr::summarise(
+      minConc = if (all(is.na(conc))) NA_real_ else min(conc, na.rm = TRUE),
+      maxConc = if (all(is.na(conc))) NA_real_ else max(conc, na.rm = TRUE),
+      .groups = "drop")
+})
+
 #allows filtering of plot data
 output$plotFilters <- renderUI({
   req(nrow(getTableData$result()) > 0)
@@ -24,7 +58,19 @@ output$plotFilters <- renderUI({
              tags$div(selectInput("all", 
                                   "Show All Analytes in the Substances Table or Only Selected Analytes", 
                                   c("All Analytes" = TRUE, "Only Selected Analytes" = FALSE), width='100%'),
-                      style = "padding:10px;width:600px;"),                            
+                      style = "padding:10px;width:600px;"),
+             tags$div(selectInput("materialType", "Filter by Material Type",
+                                  choices = c("All material types" = "", materialTypes)),
+                      style = "padding:10px;width:300px;"),
+             tags$div(conditionalPanel(
+               condition = "input.materialType != ''",
+               checkboxInput("colorByConc",
+                             " Color points by minimum concentration (µg/mL)",
+                             value = FALSE),
+               conditionalPanel(
+                 condition = "input.colorByConc",
+                 helpText("Hover over a point to see the full concentration range across CRMs of this material type."))),
+               style = "padding:10px;width:280px;"),
              style = "display:flex;flex-wrap: wrap;")
   )
 })
@@ -65,6 +111,15 @@ filteredData <- reactive({
   #remove data points where pkow or mw is NA
   data <- data[!is.na(data$pKow),]
   data <- data[!is.na(data$"Molecular Weight"),]
+  
+  if (typeFilterOn()) {
+    ar <- analyteRanges()
+    data$key <- tolower(trimws(data$Name))
+    data <- data[data$key %in% ar$key, ]
+    m <- match(data$key, ar$key)
+    data$minConc <- ar$minConc[m]
+    data$maxConc <- ar$maxConc[m]
+  }
   
   if (length(input$pkLevel) == 0 || input$pkLevel == "None"){
     data <- data
@@ -175,16 +230,37 @@ output$plot <- renderPlotly({
     ylim(500, maxMW)
   }
   
+  useColor <- colorOn() && nrow(data) > 0
+  
+  if (useColor) {
+    data$minConc[!is.na(data$minConc) & data$minConc <= 0] <- NA   # log needs positive values
+    data$maxConc[!is.na(data$maxConc) & data$maxConc <= 0] <- NA
+    rangeTxt <- ifelse(is.na(data$minConc), "not reported",
+                       ifelse(data$minConc == data$maxConc,
+                              paste(format(data$minConc, digits = 4), "µg/mL"),
+                              paste0(format(data$minConc, digits = 4), " – ",
+                                     format(data$maxConc, digits = 4), " µg/mL")))
+  }
+  data$tip <- paste('<br>Compound:', data$Name,
+                    '<br>pKow:', data$pKow,
+                    '<br>Molecular Weight: ', data$`Molecular Weight`,
+                    if (useColor) paste0('<br>Concentration: ', rangeTxt))
+  
+  # colored by concentration, or plain black
+  points <- if (useColor) {
+    list(geom_point(aes(text = map(tip, HTML), color = minConc),
+                    size = 2.5, alpha = 0.8),
+         scale_color_viridis_c(transform = "log10", na.value = "grey70",
+                               name = "Lowest reported\nconcentration\n(µg/mL)"))
+  } else {
+    geom_point(aes(text = map(tip, HTML)), size = 2, alpha = 0.7)
+  }
+  
   p <- data %>%
     ggplot(aes(x = pKow, y = `Molecular Weight`)) +
-    theme_classic()+
-    geom_point(aes(text=map(
-      paste('<br>Compound:', `Name`, 
-            '<br>pKow:', `pKow`, 
-            '<br>Molecular Weight: ', `Molecular Weight`), 
-      HTML)),
-      size = 2, alpha = 0.7) +
-    ylab("MW")+
+    theme_classic() +
+    points +
+    ylab("MW") +
     xlim + 
     ylim +
     geom_hline (yintercept = 500, linetype = "solid", color= "red") +
