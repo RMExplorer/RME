@@ -85,20 +85,24 @@ output$plotNothingSelected <- renderUI({
   
   if (noAnalytes) {
     HTML(paste(
-      "<p>Make sure you have added <strong>at least one</strong> analyte to the table in the 'General Search' tab.</p>"
+      "<p>Make sure you have added <strong>at least one</strong> analyte to the Compound Table.</p>"
     ))
   } else {
     HTML(paste(
-      "<p>Make sure you have selected at least <strong>one</strong> option from the table in the 'General Search' tab.</p>"
+      "<p>Make sure you have selected at least <strong>one</strong> option from the Compound Table.</p>"
     ))
   }
 })
 
 #the data after all the filtering
 filteredData <- reactive({
-  req(!is.function(getTableData$result()))
   result <- getTableData$result()
+  
+  req(is.data.frame(result))
+  req(nrow(result) > 0)
+  req(all(c("pKow", "Molecular Weight", "Name") %in% names(result)))
   req(input$all)
+  
   s <- input$customTable_rows_selected
   
   if(input$all == "FALSE") {
@@ -108,9 +112,11 @@ filteredData <- reactive({
     data <- result
   }
   
-  #remove data points where pkow or mw is NA
-  data <- data[!is.na(data$pKow),]
-  data <- data[!is.na(data$"Molecular Weight"),]
+  # convert to numeric first, so blanks become real NAs,
+  # then remove data points where pKow or MW is missing
+  data$pKow <- num(data$pKow)
+  data$`Molecular Weight` <- num(data$`Molecular Weight`)
+  data <- data[!is.na(data$pKow) & !is.na(data$`Molecular Weight`), ]
   
   if (typeFilterOn()) {
     ar <- analyteRanges()
@@ -136,9 +142,6 @@ filteredData <- reactive({
   } else if (input$mwLevel == "High") {
     data <- data %>% dplyr::filter(as.numeric(`Molecular Weight`) > 500)
   }
-  
-  data$pKow<- as.numeric(data$pKow)
-  data$"Molecular Weight"<- as.numeric(data$"Molecular Weight")
   
   data
 })
@@ -205,8 +208,8 @@ yTail <- function(x) {
 
 #creates the plot shown on the Physico-chemical properties tab
 output$plot <- renderPlotly({
-  req(length(filteredData()) > 0)
   data <- filteredData()
+  shiny::validate(shiny::need(nrow(data) > 0, "No analytes match the current filters."))
   
   maxMW <- max(max(data$`Molecular Weight`[!is.na(data$`Molecular Weight`)]) + 50, 2500)
   minMW <- 0
