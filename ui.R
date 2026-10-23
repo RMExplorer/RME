@@ -137,16 +137,16 @@ ui <- navbarPage(
            title = "Search",
            accordion(
              id = "searchAccordion",
-             open = "crm",
-             accordion_panel(
-               value = "crm",
-               title = "CRM Search",
-               uiOutput("crmSearch"),
-             ),
+             open = "compound",
              accordion_panel(
                value = "compound",
                title = "Compound Search",
                uiOutput("RMESearch")
+             ),
+             accordion_panel(
+               value = "crm",
+               title = "CRM Search",
+               uiOutput("crmSearch"),
              )
            )
          ),

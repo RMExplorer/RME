@@ -211,7 +211,7 @@ observeEvent(input$addCRM, {
   
   # switch the sidebar accordion over to the compound search
   accordion_panel_open("searchAccordion", "compound")
-  accordion_panel_close("searchAccordion", "crm")
+  session$sendCustomMessage("scrollToTop", list())
   
   selected <- crmTableData() %>% slice(input$crmTable_rows_selected)
   ids <- selected$ID
