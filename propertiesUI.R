@@ -9,11 +9,16 @@ output$properties <- renderUI({
       div(
         style = "display:flex; justify-content:center; align-items:center; 
                  min-height:70vh; text-align:center; font-size:1.5rem; color:#6c757d;",
-        p(HTML("Use the <strong>CRM Search</strong> tab to search for CRMs. Add their corresponding 
-                compounds to the <strong>Compound Table</strong> using the <strong>Add chosen CRM(s)
-                </strong> button, or use the <strong>Compound Search</strong> tab to search for 
-                compounds directly. To view a compound’s properties, select it's row in the 
-                <strong>Compound Table</strong> and click <strong>View Properties</strong>."))
+        p(
+          HTML("Use the <strong>Compound Search</strong> panel to search for compounds directly, or use 
+          the <strong>CRM Search</strong> panel below it to search for CRMs and add their 
+          corresponding compounds to the <strong>Compound Table</strong> using the 
+          <strong>Add chosen CRM(s)</strong> button. To view a compound’s properties, select 
+               its row in the <strong>Compound Table</strong> and click "),
+          actionButton("viewPropertiesHome", "View properties", class = "btn-info btn-sm",
+                       style = "font-size:1rem; vertical-align:baseline;"),
+          HTML(".")
+        )
       )
     ))
   }

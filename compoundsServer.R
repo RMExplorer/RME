@@ -193,6 +193,15 @@ output$searchAnalyte <- renderUI({
                  width="350px")
 })
 
+# 'View properties' button on the home page: forwards to the main button
+observeEvent(input$viewPropertiesHome, {
+  if (length(input$customTable_rows_selected) != 1) {
+    showNotification("Select a compound in the Compound Table first.", type = "warning")
+  } else {
+    shinyjs::click("viewProperties")
+  }
+})
+
 # when a row from the table is selected and the "View Properties" button is clicked, 
 # gathers all the information necessary for the 'Properties' and 'Spectral Data' page
 observeEvent(input$viewProperties, {
