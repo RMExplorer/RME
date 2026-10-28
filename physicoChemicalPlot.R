@@ -41,7 +41,7 @@ output$plotFilters <- renderUI({
   result <- getTableData$result()
   list(
     tags$div(tags$div(selectInput("pkLevel", 
-                                  "Filter polarity (pKow)", 
+                                  "Filter Polarity (pKow)", 
                                   choices = c("None", "Low", "High"), 
                                   selected = "None"), 
                       style = "padding:10px;width:200px;"),
@@ -56,9 +56,9 @@ output$plotFilters <- renderUI({
                                   selected = "No"), 
                       style = "padding:10px;width:200px;"),
              tags$div(selectInput("all", 
-                                  "Show All Analytes in the Substances Table or Only Selected Analytes", 
-                                  c("All Analytes" = TRUE, "Only Selected Analytes" = FALSE), width='100%'),
-                      style = "padding:10px;width:600px;"),
+                                  "Display Options", 
+                                  c("All Analytes in the Compound Table" = TRUE, "Only Selected Analytes" = FALSE), width='100%'),
+                      style = "padding:10px;width:400px;"),
              tags$div(selectInput("materialType", "Filter by Material Type",
                                   choices = c("All material types" = "", materialTypes)),
                       style = "padding:10px;width:300px;"),
