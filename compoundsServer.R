@@ -286,6 +286,12 @@ observeEvent(
     }
 })
 
+#unselect all rows in the custom table when unselect button is clicked
+observeEvent(input$unselect, {
+  selectRows(proxy = dataTableProxy("customTable", session = session), 
+             selected = NULL)
+})
+
 #when the 'Remove Selected Rows...' button is clicked and rows are selected, remove the names from the reactive variable yourTableAnalytes
 observeEvent(input$removeAnalyte, {
   req(input$customTable_rows_selected)

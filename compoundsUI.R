@@ -30,6 +30,10 @@ output$RMESearch <- renderUI({
         input_task_button("loadAnalytes", "Load Table", 
                           class="btn-outline-info btn-sm"
         ),
+        actionButton("viewProperties", "View Properties", 
+                     class = "btn-info btn-sm",
+                     style = "margin-left:auto;"
+        ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
       
@@ -42,7 +46,7 @@ output$RMESearch <- renderUI({
       div(
         h6("Your compound table", style = "margin:0;font-weight:bold;"),
         div(
-          actionButton("viewProperties", "View Properties", class = "btn-info btn-sm"),
+          actionButton("unselect", "Unselect All Rows", class="btn-outline-warning btn-sm"),
           actionButton("removeAnalyte", "Remove Selected", class="btn-outline-danger btn-sm"),
           actionButton("removeAllAnalytes", "Clear All", class="btn-danger btn-sm"),
           style = "display:flex;gap:8px;"
