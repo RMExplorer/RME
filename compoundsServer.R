@@ -195,8 +195,10 @@ output$searchAnalyte <- renderUI({
 
 # 'View properties' button on the home page: forwards to the main button
 observeEvent(input$viewPropertiesHome, {
-  if (length(input$customTable_rows_selected) != 1) {
+  if (length(input$customTable_rows_selected) == 0) {
     showNotification("Select a compound in the Compound Table first.", type = "warning")
+  } else if (length(input$customTable_rows_selected) != 1) {
+    showNotification("Make sure you have only selected one row.", type = "warning")
   } else {
     shinyjs::click("viewProperties")
   }
@@ -205,6 +207,11 @@ observeEvent(input$viewPropertiesHome, {
 # when a row from the table is selected and the "View Properties" button is clicked, 
 # gathers all the information necessary for the 'Properties' and 'Spectral Data' page
 observeEvent(input$viewProperties, {
+  if (length(input$customTable_rows_selected) == 0) {
+    showNotification("Select a compound in the Compound Table first.", type = "warning")
+  } else if (length(input$customTable_rows_selected) != 1) {
+    showNotification("Make sure you have only selected one row.", type = "warning")
+  }
   req(length(input$customTable_rows_selected) == 1)
   req(length(getTableData$result()) > 0)
   result <- getTableData$result()
@@ -391,7 +398,7 @@ output$customTable <- renderDT({
                         )
   }
   
-  datatable(data, selection = "single",
+  datatable(data, selection = "multiple",
             options = list(pageLength = 10, responsive = FALSE, scrollX = TRUE, autoWidth = TRUE, dom = 'ltip',
                            # show only the first 4 CRM links, "more"/"less" expands or collapses the cell
                            # (handled by the .cell-toggle click handler in ui.R)
