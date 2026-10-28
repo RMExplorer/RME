@@ -18,7 +18,7 @@ output$RMESearch <- renderUI({
       textOutput("urlerror"),
       
       div(
-        actionButton("addallSubstances", div("Add All", tooltip_ui("substanceaddTooltip", "Add all compounds to the table. Not all 
+        actionButton("addallSubstances", div("Add All Compounds", tooltip_ui("substanceaddTooltip", "Add all compounds to the table. Not all 
                                                                                           compounds from the NRC repository will be 
                                                                                           added due to search limitations."),
                                              style="display:flex;"), 

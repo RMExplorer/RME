@@ -23,13 +23,13 @@ output$crmSearch <- renderUI({
       #actions that add to the compound table
       div(
         actionButton("addCRM", 
-                     div("Add chosen CRM(s) to the Compound table", 
+                     div("Add Chosen CRM(s) to the Compound Table", 
                          tooltip_ui("crmaddTooltip", 
-                                    "Select CRM rows, then press this button to add the corresponding compounds to the compound table. The Compound Search panel will open so you can view it."),
+                                    "Select CRM rows, then press this button to add the corresponding compounds to the compound table."),
                          style = "display:flex;gap:4px;"), 
+                     class = "btn-info btn-sm"),
+        actionButton("addAllCRMs", "Add All CRMs", 
                      class = "btn-success btn-sm"),
-        actionButton("addAllCRMs", "Add all CRMs to the table", 
-                     class = "btn-outline-success btn-sm"),
         style = "display:flex;flex-wrap:wrap;gap:8px;padding:0.25rem 0 0.75rem 0;"
       ),
       
@@ -40,8 +40,8 @@ output$crmSearch <- renderUI({
         h6("Your CRM table", style = "margin:0;font-weight:bold;"),
         div(
           actionButton("unselectCRMs", "Unselect All Rows", class="btn-outline-warning btn-sm"),
-          actionButton("removeCRM", "Remove selected", class = "btn-outline-danger btn-sm"),
-          actionButton("removeAllCRM", "Clear all", class = "btn-danger btn-sm"),
+          actionButton("removeCRM", "Remove Selected", class = "btn-outline-danger btn-sm"),
+          actionButton("removeAllCRM", "Clear All", class = "btn-danger btn-sm"),
           style = "display:flex;gap:8px;"
         ),
         style = "display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-bottom:0.5rem;"
