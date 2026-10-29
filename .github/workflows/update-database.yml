@@ -2,7 +2,7 @@ name: Update NRC CRM database
 
 on:
   schedule:
-    - cron: "0 6 * * 1"     # Mondays 06:00 UTC (3:00 AM ADT/2:00 AM AST)
+    - cron: "17 8 * * 5"     # Fridays 08:17 UTC (5:17 AM ADT/4:17 AM AST)
   workflow_dispatch:        # adds manual "Run workflow" button
 
 permissions:
