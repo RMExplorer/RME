@@ -5044,88 +5044,100 @@
   },
   "files": {
     ".github/workflows/update-database.yml": {
-      "checksum": "19924178dfbad49efea0eb2e0d7e43d4"
+      "checksum": "bfca1f9114f92627cedc4aa023dd43f0"
+    },
+    ".RData": {
+      "checksum": "e17d797e305846e786cae450b665c2af"
     },
     ".Rprofile": {
-      "checksum": "5721a9627d1f3dd9c525c814ff4bea80"
+      "checksum": "d48cdbb3733bb5c64d70f5958a6f6472"
     },
     "about.R": {
-      "checksum": "864dd65512dda5223a10a09132a63b3f"
+      "checksum": "ded81a2efe222a48e42101b5648ae270"
     },
     "buildDatabase.R": {
-      "checksum": "ac49769d004c913604bbda064626c412"
+      "checksum": "a7e767ffa3845b6df23ad2f87b1b7c4a"
     },
     "compoundsServer.R": {
-      "checksum": "fd3f5f1de7b15c7eabc4ceb5a5fa15ad"
+      "checksum": "77de93ff6df47930011841e1adef376f"
     },
     "compoundsUI.R": {
-      "checksum": "04ea754d9ab7dee98a36fbfe2fbc04a6"
+      "checksum": "ee6678a33a6ed76a16ac479526d94aae"
     },
     "crmPopup.R": {
-      "checksum": "6b4e01b2323ec8ce69123d3780d6479c"
+      "checksum": "03ec9ba73b74b708ff21a90f9bcebdf1"
     },
     "crmSearchServer.R": {
-      "checksum": "f3bf886ec648ebd7ef5723bb883b1547"
+      "checksum": "3fd173baecc23292fca8d8b1d552ed99"
     },
     "crmSearchUI.R": {
-      "checksum": "1055e8713d23c774c70a5a12aef3eb41"
+      "checksum": "13f689e2f5c8848a5bbac202ce6ebb16"
+    },
+    "docs/data-dictionary.md": {
+      "checksum": "bd50500571d5de7fe2e76ea55b15a764"
+    },
+    "docs/deployment-operations.md": {
+      "checksum": "7e205aa7edd83b272681c0611cc24726"
     },
     "global.R": {
-      "checksum": "b4ba10e843aa10a73b8d3cf174a8bec3"
+      "checksum": "64a2914301c0a273d1a5f4f4c53ed01b"
     },
     "harvest.rds": {
       "checksum": "cd65aa23c858e054d8f9eaad520e1967"
     },
     "instructions.R": {
-      "checksum": "6d3be4fbb63642b83eb7ff23fd4b3d46"
+      "checksum": "390a444f25bd9feb1f7192d172268847"
     },
     "kcdbserver.R": {
-      "checksum": "7a7f28852534bff9396c90a370b0b3a9"
+      "checksum": "f93a529ac0439520c57e51c11849fd06"
     },
     "license.md": {
       "checksum": "5bd68ef199b10573d96fd532fd1b0f36"
     },
     "nrc_crm.sqlite": {
-      "checksum": "61e72b2fabf7542aefc81fc52f0933f9"
+      "checksum": "43345085d2a708bce0c50caf2725bb68"
     },
     "physicoChemicalPlot.R": {
-      "checksum": "c6a4bc4f453fb367936f212977642562"
+      "checksum": "5dba8b30a60184442b2458d408e483ed"
     },
     "populateDatabase.R": {
-      "checksum": "1d00c906cb9b77476d034b23f693accb"
+      "checksum": "31560e3d1c7184b4d98affca54132893"
     },
     "propertiesServer.R": {
-      "checksum": "3ac015fff0795630e90d425e1ab5b5e3"
+      "checksum": "eed7f9376e422a56ca44bd6ca3e329aa"
     },
     "propertiesUI.R": {
-      "checksum": "ed6a991a6c8f5a70c93d77e2aa604076"
+      "checksum": "9121065ae8effb1c1e6d382612f6c65e"
     },
     "README.html": {
-      "checksum": "ba61cdd2108ee22b0362a75ef493d5f3"
+      "checksum": "ad4a0f21f78f492c917f19eb4dea6563"
     },
     "README.md": {
-      "checksum": "e9d862ea26470b99533b964a7e5012ec"
+      "checksum": "12833ea2578c29c52bab2cf24cc2b42e"
     },
     "renderSpectrumServer.R": {
-      "checksum": "9d23c82ec353bf0a0be0fee6dcdc8aa6"
+      "checksum": "026c7d81f985cba902a7eebebe440f72"
     },
     "renv.lock": {
       "checksum": "d595ebc436c3c57fecbf1c7d20fb6ce1"
     },
     "server.R": {
-      "checksum": "17cfb04f7b26e29d1e2f139d41e615a2"
+      "checksum": "9ef82acf9f5b775a4dc8cd8bcd2175e4"
     },
     "tooltip_ui.R": {
-      "checksum": "83d3bdcedadb4cd39c79dfcf95bd9eb7"
+      "checksum": "2b8438a2d2c1328923797c2be62c81be"
     },
     "ui.R": {
-      "checksum": "9f6f245441e5fe721c0017901013ef99"
+      "checksum": "67cde4fe9ecd49b31ecd1414315d1bf1"
     },
     "www/Icon.png": {
       "checksum": "4b13403afae06bb377c1d6fe504227e7"
     },
     "www/loading.gif": {
       "checksum": "7e15e93295bbc43f11774bff67e0a4fa"
+    },
+    "www/RME_User_Manual_v1.pdf": {
+      "checksum": "16786b7ee3b7079493dc1cadaca95de5"
     }
   },
   "users": null
