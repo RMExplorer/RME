@@ -31,8 +31,7 @@ output$RMESearch <- renderUI({
                           class="btn-outline-info btn-sm"
         ),
         actionButton("viewProperties", "View Properties", 
-                     class = "btn-info btn-sm",
-                     style = "margin-left:auto;"
+                     class = "btn-info btn-sm"
         ),
         style = "display:flex;gap:10px;padding:0px 0px 10px 0px;"
       ),
