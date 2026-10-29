@@ -5046,9 +5046,6 @@
     ".github/workflows/update-database.yml": {
       "checksum": "bfca1f9114f92627cedc4aa023dd43f0"
     },
-    ".RData": {
-      "checksum": "e17d797e305846e786cae450b665c2af"
-    },
     ".Rprofile": {
       "checksum": "d48cdbb3733bb5c64d70f5958a6f6472"
     },
