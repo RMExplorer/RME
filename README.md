@@ -7,7 +7,7 @@ integrates it with other data sources such as PubChem and the BIPM Key Compariso
 
 The RM Explorer was developed by the National Research Council of Canada's (NRC) Biotoxin Metrology and Inorganic Metrology Teams.
 
-Please cite as: Bruno Garrido, Tanishka Ghosh, Daniel Yang, Patricia LeBlanc, Marcin Paluch, Sophie Roy, Pearse McCarron, Zoltán Mester, and Juris Meija, RM Explorer version 1.0, 2025 https://rmexplorer-rmev1.share.connect.posit.cloud/
+Please cite as: Bruno Garrido, Tanishka Ghosh, Daniel Yang, Aishwarya Jathan, Patricia LeBlanc, Marcin Paluch, Sophie Roy, Pearse McCarron, Zoltán Mester, and Juris Meija, RM Explorer version 1.0, 2025 https://rmexplorer-rmev1.share.connect.posit.cloud/
 
 
 ## Documentation
