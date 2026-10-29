@@ -27,13 +27,22 @@ output$about <- renderUI({
         p("The Reference Material Explorer is an application built upon the NRC Digital Repository external Application Programming Interfaces (APIs) 
          that allows users to visualise, analyse and display useful information about the Reference Materials produced by the National 
          Research Council of Canada. This application relies upon and complies with FAIR data principles and showcases multiple uses of 
-         machine-readable information in digital CRM certificates.", style = "font-size: 1rem; line-height: 1.6;")
+         machine-readable information in digital CRM certificates. The RM Explorer and its broader framework are also discussed in a paper at: ", 
+         a(href = "https://doi.org/10.1007/s00769-026-01705-w", "https://doi.org/10.1007/s00769-026-01705-w.", target = "_blank"),
+         style = "font-size: 1rem; line-height: 1.6;"),
+        hr(),
+        p("For detailed instructions on using the RM Explorer, refer to the ",
+          a(href = "RME_User_Manual_v1.pdf",
+            "User Manual",
+            download = "RME_User_Manual_v1.pdf",
+            target = "_blank"),
+          ".")
       ),
       
       card(
         style = "padding: 1.5rem; margin-bottom: 2rem;",
         p("The RM Explorer was developed by the National Research Council of Canada's (NRC) Biotoxin Metrology Team."),
-        p(strong("Please cite as:"), " Bruno Garrido, Tanishka Ghosh, Patricia LeBlanc, Pearse McCarron, Juris Meija, RM Explorer version 1.0, 2025. ",
+        p(strong("Please cite as:"), " Bruno Garrido, Tanishka Ghosh, Aishwarya Jathan, Patricia LeBlanc, Pearse McCarron, Juris Meija, RM Explorer version 1.0, 2025. ",
           a(href = "https://rmexplorer-rmev1.share.connect.posit.cloud/", "https://rmexplorer-rmev1.share.connect.posit.cloud/", target = "_blank")),
         p("Report any bugs/issues to: ", a(href = "mailto:bruno.garrido@nrc-cnrc.gc.ca", "bruno.garrido@nrc-cnrc.gc.ca"))
       ),
