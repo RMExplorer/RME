@@ -56,7 +56,7 @@ output$instructions <- renderUI({
             " dropdown displays the available CRMs. Select a CRM to add it to the CRM table."
           ),
           p(
-            "You can use ", strong("'Select an Affiliate'"), 
+            "You can use ", strong("'Select a Contributor'"), 
             " to view the CRMs associated with a specific group."
           ),
           p(

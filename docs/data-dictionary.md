@@ -16,7 +16,7 @@ One row per reference material (CRM).
 | rmid | TEXT | PK | CRM identifier from the OAI record |
 | title | TEXT | | Title of the CRM |
 | name | TEXT | | The part of title before the colon (e.g. DORM-1) |
-| affiliation | TEXT | | Comma-separated list of affiliations |
+| affiliation | TEXT | | Comma-separated list of contributors |
 | material_type | TEXT | | One of "Matrix material", "Calibration solution", "High-purity material" |
 | summary | TEXT | | Abstract from the digital repository entry |
 | doi | TEXT | | |

@@ -52,7 +52,7 @@ getCRMData <- function(crm){
                       htmltools::htmlEscape(data$name))
   
   data <- data.frame("ID" = data$rmid, "CRM" = data$name, "Name" = nameHTML, 
-                     "Affiliates" = data$affiliation, "Material Type" = data$material_type,
+                     "Contributors" = data$affiliation, "Material Type" = data$material_type,
                      check.names = FALSE, stringsAsFactors = FALSE)
   shinyjs::show("crmTable")
   return(data)
@@ -100,10 +100,10 @@ observeEvent(input$selectCRM, {
                        selected = NULL)
 })
 
-#the 'Select an Affiliate' drop down in the 'crm search' page
+#the 'Select a Contributor' drop down in the 'crm search' page
 output$searchAffiliate <- renderUI({
   # affiliateChoices is built from the database at the top of this file
-  selectizeInput(inputId = "selectedAffiliate", "Select an Affiliate", 
+  selectizeInput(inputId = "selectedAffiliate", "Select a Contributor", 
                  choices = append("", affiliateChoices), selected = NULL, width="100%")
 })
 
@@ -123,7 +123,7 @@ observeEvent(input$selectedAffiliate, {
   crmList(newList)
   
   #refresh the select input so it doesnt show previous selection in the box
-  updateSelectizeInput(session, inputId = "selectedAffiliate", label = "Select an Affiliate",
+  updateSelectizeInput(session, inputId = "selectedAffiliate", label = "Select a Contributor",
                        choices = append("", affiliateChoices),
                        selected = NULL)
 })
@@ -162,7 +162,7 @@ output$crmTable <- renderDT({
   # when no CRMs have been added yet, show the empty table
   if (length(crmList()) == 0) {
     emptyData <- data.frame("Name" = character(0),
-                            "Affiliates" = character(0),
+                            "Contributors" = character(0),
                             "Material Type" = character(0),
                             check.names = FALSE)
     return(datatable(emptyData, 
@@ -173,7 +173,7 @@ output$crmTable <- renderDT({
   }
   req(length(crmTableData()) > 0)
   data <- crmTableData()
-  datatable(data[, c("Name", "Affiliates", "Material Type")], 
+  datatable(data[, c("Name", "Contributors", "Material Type")], 
             options = list(scrollX = TRUE, autoWidth = TRUE, dom = 'ltip',
                            # truncate long Affiliates values. Clicking "more"/"less" expands or collapses
                            # the cell (handled by the .cell-toggle click handler in ui.R)
