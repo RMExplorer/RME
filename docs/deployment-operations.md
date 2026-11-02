@@ -41,9 +41,9 @@ are used by the workflow to deploy. They can be regenerated at https://login.pos
   5. `rsconnect::deployApp()`
 
 ## Troubleshooting
-TODO: fill in as issues arise
+Fill in as issues arise
 
-| Symptom | Likely cause | What to check |
+| Symptom | Likely cause | Fix |
 |---|---|---|
-| | | |
+| App doesn't load or is stuck on splash screen | This usually occurs when the app hasn't been used in a few days | Try again in a few minutes |
 
