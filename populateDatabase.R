@@ -43,19 +43,6 @@ get_text <- function(node) {
   }
 }
 
-# Helper: convert xml to dataframe (Juris function)
-xml_to_dataframe <- function(nodeset){
-  if(class(nodeset) != 'xml_nodeset'){ stop('Input should be "xml_nodeset" class') }
-  lst <- lapply(nodeset, function(x){
-    tmp <- xml2::xml_text(xml2::xml_children(x))
-    names(tmp) <- xml2::xml_name(xml2::xml_children(x))
-    return(as.list(tmp))
-  })
-  result <- do.call(plyr::rbind.fill, lapply(lst, function(x)
-    as.data.frame(x, stringsAsFactors = F)))
-  return(tibble::as_tibble(result))
-}
-
 #Helper: method to get url content (used to bypass ssl)
 geturl <- function(url, handle) {
   curl::curl_fetch_memory(url, handle = handle)$content  
@@ -412,25 +399,20 @@ get_pubchem_properties <- function(name, inchikey) {
   )
 }
 
-# Returns crms that feature a given compound
-get_compound_crms <- function(term, inchikey) {
-  tryCatch({
-    q <- gsub(" ", "+", term)
-    if (length(inchikey) == 1 && !is.na(inchikey)) {
-      link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
-                     '+OR+', gsub("/", "%2F", gsub(" ", "+", inchikey)),
-                     '&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-    } else {
-      link <- paste0('https://nrc-digital-repository.canada.ca/eng/search/atom/?q=', q,
-                     '&q=&q=&y1=&y2=&cn=crm&ps=10&s=sc&av=1')
-    }
-    d  <- xml_children(read_xml(geturl(link, h_new())))
-    df <- xml_to_dataframe(d)[-1, -c(1, 2)]
-    df <- df[!is.na(df$title), ]
-    crms <- sort(vapply(str_split(df$title, ":"), function(x) str_trim(x[1]), character(1)))
-    crms <- unique(crms[crms != "No results"])
-    if (length(crms) == 0) NA_character_ else paste(crms, collapse = ", ")
-  }, error = function(e) NA_character_)
+# Build a name -> crms lookup from which CRM analyte tables each compound appears in
+build_compound_crms <- function(analyte_tables, reference_materials) {
+  if (nrow(analyte_tables) == 0) {
+    return(data.frame(name = character(), crms = character(), stringsAsFactors = FALSE))
+  }
+  
+  analyte_tables |>
+    distinct(rmid, name) |>
+    inner_join(distinct(reference_materials, rmid, crm = name), by = "rmid") |>
+    filter(!is.na(crm)) |>
+    distinct(name, crm) |>
+    arrange(name, crm) |>
+    group_by(name) |>
+    summarise(crms = paste(crm, collapse = ", "), .groups = "drop")
 }
 
 # Harvest all NRC CRM records
@@ -583,6 +565,7 @@ get_oai_records <- function(base_url = OAI_BASE_URL, metadata_prefix = "oai_open
 }
 
 # Add columns to compounds table with info from pubchem
+# (crms are attached separately, from the analyte tables)
 enrich_compounds <- function(compounds) {
   if (nrow(compounds) == 0) {
     return(
@@ -596,7 +579,6 @@ enrich_compounds <- function(compounds) {
         pKow = numeric(),
         exact_mass = numeric(),
         TPSA = numeric(),
-        crms = character(),
         stringsAsFactors = FALSE
       )
     )
@@ -608,7 +590,6 @@ enrich_compounds <- function(compounds) {
       inchikey = compounds$inchikey[i]
     )
     Sys.sleep(0.5) # throttle pubchem requests
-    row$crms <- get_compound_crms(row$name, row$inchikey)
     row
   })
   
@@ -680,19 +661,6 @@ harvest_spectral <- function(known_links = character()) {
 }
 
 
-# Re-fetch only the crms column for compounds that are already stored
-# (a new CRM can feature an existing compound, which makes its crms stale)
-refresh_crms <- function(known_compounds) {
-  if (nrow(known_compounds) == 0) {
-    return(data.frame(name = character(), crms = character(), stringsAsFactors = FALSE))
-  }
-  crms <- vapply(seq_len(nrow(known_compounds)), function(i) {
-    get_compound_crms(known_compounds$name[i], known_compounds$inchikey[i])
-  }, character(1))
-  data.frame(name = known_compounds$name, crms = crms, stringsAsFactors = FALSE)
-}
-
-
 # find what the existing database contains
 DB_PATH <- "nrc_crm.sqlite"
 FULL_REFRESH <- FALSE   # TRUE = ignore the database and re-harvest everything
@@ -700,7 +668,9 @@ FULL_REFRESH <- FALSE   # TRUE = ignore the database and re-harvest everything
 harvest_started <- format(Sys.time(), "%Y-%m-%d", tz = "UTC")  # OAI datestamps are UTC
 
 last_harvest    <- NULL
-known_compounds <- data.frame(name = character(), inchikey = character(), stringsAsFactors = FALSE)
+known_compounds <- data.frame(name = character(), inchikey = character(), crms = character(), stringsAsFactors = FALSE)
+known_analytes  <- data.frame(rmid = character(), name = character(), stringsAsFactors = FALSE)
+known_rms       <- data.frame(rmid = character(), name = character(), stringsAsFactors = FALSE)
 known_links     <- character()
 
 if (!FULL_REFRESH && file.exists(DB_PATH)) {
@@ -711,7 +681,13 @@ if (!FULL_REFRESH && file.exists(DB_PATH)) {
     if (length(lh) == 1) last_harvest <- lh
   }
   if (dbExistsTable(con, "compounds")) {
-    known_compounds <- dbGetQuery(con, "SELECT name, inchikey FROM compounds")
+    known_compounds <- dbGetQuery(con, "SELECT name, inchikey, crms FROM compounds")
+  }
+  if (dbExistsTable(con, "analyte_tables")) {
+    known_analytes <- dbGetQuery(con, "SELECT DISTINCT rmid, name FROM analyte_tables")
+  }
+  if (dbExistsTable(con, "reference_materials")) {
+    known_rms <- dbGetQuery(con, "SELECT rmid, name FROM reference_materials")
   }
   if (dbExistsTable(con, "spectral_data")) {
     known_links <- dbGetQuery(con, "SELECT link FROM spectral_data")$link
@@ -728,16 +704,34 @@ harvested <- get_oai_records(from = last_harvest)
 reference_materials <- harvested$reference_materials
 analyte_tables <- distinct(harvested$analyte_tables)
 
-# new compounds get the full PubChem enrichment; compounds we already have
-# only get their crms refreshed, and only if they appear in a re-harvested record
+# work out which CRMs each compound appears in, using stored rows for unharvested CRMs
+# plus the freshly harvested rows. Re-harvested CRMs are dropped from
+# the stored side so analytes removed from a CRM don't linger.
+reharvested <- reference_materials$rmid
+all_analytes <- bind_rows(
+  known_analytes[!known_analytes$rmid %in% reharvested, , drop = FALSE],
+  distinct(analyte_tables, rmid, name)
+)
+all_rms <- bind_rows(
+  known_rms[!known_rms$rmid %in% reharvested, , drop = FALSE],
+  reference_materials[, c("rmid", "name")]
+)
+crm_lookup <- build_compound_crms(all_analytes, all_rms)
+
+# new compounds get the full PubChem enrichment plus their crms
 harvested_compounds <- harvested$compounds
 new_compounds <- harvested_compounds[!harvested_compounds$name %in% known_compounds$name, , drop = FALSE]
-old_compounds <- known_compounds[known_compounds$name %in% harvested_compounds$name, , drop = FALSE]
+new_compounds <- enrich_compounds(new_compounds) |>
+  left_join(crm_lookup, by = "name")
 
-compounds <- bind_rows(
-  enrich_compounds(new_compounds),
-  refresh_crms(old_compounds)
-)
+# existing compounds only get a (name, crms) row if their crms changed
+changed_compounds <- known_compounds |>
+  select(name, old_crms = crms) |>
+  left_join(crm_lookup, by = "name") |>
+  filter(coalesce(crms, "") != coalesce(old_crms, "")) |>
+  select(name, crms)
+
+compounds <- bind_rows(new_compounds, changed_compounds)
 
 spectral_data <- harvest_spectral(known_links)
 
