@@ -5,7 +5,7 @@ How rmexplorer is built, updated, and deployed.
 - **Live app:** https://rmexplorer-rmev1.share.connect.posit.cloud/
 - **Old URL:** the previous shinyapps.io address redirects to the live app, so the migrated Connect Cloud item must be kept
 - **Workflow file:** [`.github/workflows/update-database.yml`](../.github/workflows/update-database.yml) a GitHub Actions 
-configuration that tells GitHub to automatically rebuild the database, deploy the app, and commit the updated database to the repo every Monday.
+configuration that tells GitHub to automatically rebuild the database, deploy the app, and commit the updated database to the repo every Saturday.
 
 ## Workflow Overview
 
